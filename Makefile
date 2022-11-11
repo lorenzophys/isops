@@ -17,6 +17,7 @@ format:
 .PHONY: lint
 lint:
 	flake8 ${MAIN_PATH} ${TESTS_PATH}
+	mypy ${MAIN_PATH}
 
 .PHONY: test
 test:
