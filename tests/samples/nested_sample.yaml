@@ -1,0 +1,14 @@
+data:
+  nested:
+    username: YWRtaW4=
+    password: MWYyZDFlMmU2N2Rm
+  another:
+    - name: nginx
+      image: nginx:1.14.2
+      ports:
+        - containerPort: 80
+  again:
+    - name: nginx_stable
+      image: nginx:stable
+      ports:
+        - containerPort: 443

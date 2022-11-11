@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "iops"
+version = "0.1.0"
+description = ""
+authors = ["Lorenzo Maffioli <lorenzo.maffioli@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.scripts]
+iops = "iops.cli:cli"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pyyaml = "^6.0"
+click = "^8.1.3"
+
+[tool.poetry.group.dev.dependencies]
+black = "^22.10.0"
+isort = "^5.10.1"
+pytest = "^7.2.0"
+flake8 = "^5.0.4"
+pytest-cov = "^4.0.0"
+
+[tool.black]
+max-line-length = 100
+
+[tool.isort]
+profile = "black"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
