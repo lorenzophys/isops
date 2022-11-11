@@ -1,13 +1,11 @@
-import os
 from pathlib import Path
-from typing import Dict, Generator, Union
+from typing import Dict, Generator, Optional, Union
 
 import yaml
 
 
-def load_yaml(path: Path) -> Union[Dict, None]:
-    yaml_path = os.path.join(path)
-    with open(yaml_path, "r") as stream:
+def load_yaml(path: Path) -> Optional[Dict]:
+    with open(path, "r") as stream:
         try:
             return yaml.safe_load(stream)
         except yaml.YAMLError:
