@@ -4,6 +4,7 @@ TESTS_PATH=tests
 .PHONY: clean
 clean:
 	find . -name '__pycache__' -exec rm -rf {} +
+	find . -name '.DS_Store' -exec rm -rf {} +
 	rm -f .coverage
 	rm -rf .pytest_cache
 
