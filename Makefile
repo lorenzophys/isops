@@ -5,8 +5,9 @@ TESTS_PATH=tests
 clean:
 	find . -name '__pycache__' -exec rm -rf {} +
 	find . -name '.DS_Store' -exec rm -rf {} +
+	find . -name '.pytest_cache' -exec rm -rf {} +
+	find . -name '.mypy_cache' -exec rm -rf {} +
 	rm -f .coverage
-	rm -rf .pytest_cache
 
 .PHONY: format
 format:
