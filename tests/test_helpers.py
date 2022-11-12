@@ -31,8 +31,7 @@ def test_is_yaml_loaded_correctly(example_good_deploy_yaml):
 
 
 def test_bad_yaml_handled_correctly(example_bad_yaml):
-    expected = None
-    assert example_bad_yaml == expected
+    assert example_bad_yaml is None
 
 
 @pytest.mark.parametrize("config", ["root/.sops.yaml", "root/.sops.yml"])
@@ -79,7 +78,7 @@ def test_ensure_too_many_dotsops(example_dotspos_yaml, tmp_path):
 def test_find_by_key_one_target(simple_secret_yaml):
     target = "data"
     expected = [{target: {"username": "YWRtaW4=", "password": "MWYyZDFlMmU2N2Rm"}}]
-    got = list()
+    got = []
     for val in find_by_key(simple_secret_yaml, target):
         got.append(val)
     assert got == expected
@@ -88,7 +87,7 @@ def test_find_by_key_one_target(simple_secret_yaml):
 def test_find_by_key_multiple_targets(example_good_deploy_yaml):
     target = "app"
     expected = [{target: "nginx"}] * 3
-    got = list()
+    got = []
     for val in find_by_key(example_good_deploy_yaml, target):
         got.append(val)
     assert got == expected
@@ -101,7 +100,7 @@ def test_find_by_key_target_is_in_a_possibly_nested_list(
     example_good_deploy_yaml, key, value
 ):
     expected = [{key: value}]
-    got = list()
+    got = []
     for val in find_by_key(example_good_deploy_yaml, key):
         got.append(val)
     assert got == expected
@@ -130,7 +129,7 @@ def test_find_by_key_target_is_in_a_messy_nested_yaml(nested_yaml):
             }
         }
     ]
-    got = list()
+    got = []
     for val in find_by_key(nested_yaml, key):
         got.append(val)
     assert got == expected
@@ -139,7 +138,7 @@ def test_find_by_key_target_is_in_a_messy_nested_yaml(nested_yaml):
 def test_get_all_values():
     input = {"data": {"username": "YWRtaW4=", "password": "MWYyZDFlMmU2N2Rm"}}
     expected = ["YWRtaW4=", "MWYyZDFlMmU2N2Rm"]
-    got = list()
+    got = []
     for val in get_all_values(input):
         got.append(val)
     assert got == expected
@@ -175,7 +174,7 @@ def test_get_all_values_nested_messy_yaml():
         "nginx:stable",
         443,
     ]
-    got = list()
+    got = []
     for val in get_all_values(input):
         got.append(val)
     assert got == expected
