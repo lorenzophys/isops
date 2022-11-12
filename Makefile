@@ -27,7 +27,7 @@ test:
 
 .PHONY: coverage
 coverage:
-	pytest --no-cov-on-fail --cov-report term-missing --cov=${MAIN_PATH} tests/
+	pytest -v --no-cov-on-fail --cov-report term-missing --cov=${MAIN_PATH} tests/
 
 .PHONY: tox
 tox:

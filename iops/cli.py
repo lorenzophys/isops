@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, List, Pattern
+from typing import Dict, List, Pattern, Tuple
 
 import click
 
@@ -17,13 +17,16 @@ DEFAULT_PATH_REGEX = r"\.ya?ml"
 DEFAULT_ENCRYPTED_REGEX = r""
 
 
-def _extract_bad_keys(secret: Dict, encrypted_regex: Pattern[str]) -> List[str]:
+def _extract_keys(secret: Dict, encrypted_regex: Pattern[str]) -> Tuple[List[str]]:
     bad_keys: List[str] = []
+    good_keys: List[str] = []
     for match in find_by_key(secret, encrypted_regex):
         for key, value in get_all_values(match):
             if not verify_encryption_regex(str(value)):
                 bad_keys.append(key)
-    return bad_keys
+            else:
+                good_keys.append(key)
+    return good_keys, bad_keys
 
 
 @click.version_option(__version__, "--version", message=__version__)
@@ -37,16 +40,16 @@ def cli(ctx: click.Context, path: Path) -> None:
 
     received_path = Path(path)
 
-    click.echo("START")  # verbose
-
     dotsops_path, dotsops_content = ensure_dotsops(received_path)
 
-    if dotsops_content is None:
-        click.echo("No .sops.yaml")  # always
+    if dotsops_content == {}:
+        click.secho(message="No .sops.yaml", bold=True, fg="red")  # always
         ctx.exit(1)
     else:
         creation_rules = dotsops_content["creation_rules"]
-        click.echo(f"Found config file in {dotsops_path}")  # verbose
+        click.secho(
+            message=f"Found config file in {dotsops_path}", bold=True
+        )  # verbose
 
     for rule in creation_rules:
         if "path_regex" not in rule.keys():
@@ -54,28 +57,26 @@ def cli(ctx: click.Context, path: Path) -> None:
         if "encrypted_regex" not in rule.keys():
             rule["encrypted_regex"] = DEFAULT_ENCRYPTED_REGEX
 
-        click.echo(
-            f"ENCRYPTION_REGEX: {rule['encrypted_regex']} PATH_REGEX: {rule['path_regex']}"
-        )  # verbose
-
         path_regex = rule["path_regex"]
 
         for file in find_all_files_by_regex(path_regex, received_path):
-            click.echo(file)  # verbose
-
             encrypted_regex = rule["encrypted_regex"]
             secret = load_yaml(file)
             if secret is None:
-                click.echo("Invalid YAML!")  # Always
+                click.secho(message="Invalid YAML!", bold=True, fg="red")  # always
                 ctx.exit(1)
             else:
-                bad_keys = _extract_bad_keys(secret, encrypted_regex)
+                good_keys, bad_keys = _extract_keys(secret, encrypted_regex)
+                all_keys = good_keys + bad_keys
+                all_keys.sort()
 
-            if not bad_keys:
-                click.echo("OK!")  # verbose
-            else:
-                for bad_key in bad_keys:
-                    click.echo(f"{bad_key} should be encrypted!")  # Always
+            for key in all_keys:
+                if key in good_keys:
+                    click.secho(message=f"{file}::{key} ", bold=False, nl=False)
+                    click.secho(message="[SAFE]", bold=False, fg="green")
+                else:
+                    click.secho(message=f"{file}::{key} ", bold=False, nl=False)
+                    click.secho(message="[UNSAFE]", bold=False, fg="red")
 
     if not bad_keys:
         ctx.exit(0)
