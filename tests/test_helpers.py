@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 import yaml
 
@@ -40,7 +42,9 @@ def test_ensure_dotsops_yaml_in_root_dir(example_dotspos_yaml, tmp_path, config)
     dotsops.parent.mkdir()
     dotsops.write_text(yaml.dump(example_dotspos_yaml))
     root = tmp_path / "root"
-    assert ensure_dotsops(root) is not None
+    dotsops_path, content = ensure_dotsops(root)
+    assert dotsops_path == dotsops
+    assert content != {}
 
 
 @pytest.mark.parametrize("config", [".sops/.sops.yaml", ".sops/.sops.yml"])
@@ -51,7 +55,9 @@ def test_ensure_dotsops_in_dotsops_dir(example_dotspos_yaml, tmp_path, config):
     dotsops.parent.mkdir()
     dotsops.write_text(yaml.dump(example_dotspos_yaml))
     root = tmp_path / "root"
-    assert ensure_dotsops(root) is not None
+    dotsops_path, content = ensure_dotsops(root)
+    assert dotsops_path == dotsops
+    assert content != {}
 
 
 def test_ensure_no_dotsops(tmp_path):
@@ -60,7 +66,9 @@ def test_ensure_no_dotsops(tmp_path):
     dotsops = root / "halo.yaml"
     dotsops.write_text("I'm not .sops.yaml")
     root = tmp_path / "root"
-    assert ensure_dotsops(root) is None
+    dotsops_path, content = ensure_dotsops(root)
+    assert dotsops_path == Path("NonePath")
+    assert content == {}
 
 
 def test_ensure_too_many_dotsops(example_dotspos_yaml, tmp_path):
@@ -72,7 +80,9 @@ def test_ensure_too_many_dotsops(example_dotspos_yaml, tmp_path):
     dotsops_2 = root / ".sops.yaml"
     dotsops_2.write_text(yaml.dump(example_dotspos_yaml))
     root = tmp_path / "root"
-    assert ensure_dotsops(root) is None
+    dotsops_path, content = ensure_dotsops(root)
+    assert dotsops_path == Path("NonePath")
+    assert content == {}
 
 
 def test_find_by_key_one_target(simple_secret_yaml):
@@ -89,6 +99,25 @@ def test_find_by_key_multiple_targets(example_good_deploy_yaml):
     expected = [{target: "nginx"}] * 3
     got = []
     for val in find_by_key(example_good_deploy_yaml, target):
+        got.append(val)
+    assert got == expected
+
+
+def test_find_by_key_regex(simple_secret_yaml):
+    target = "^(data|metadata)$"
+    expected = [
+        {"data": {"username": "YWRtaW4=", "password": "MWYyZDFlMmU2N2Rm"}},
+        {
+            "metadata": {
+                "name": "mysecret",
+                "namespace": "default",
+                "resourceVersion": "164619",
+                "uid": "cfee02d6-c137-11e5-8d73-42010af00002",
+            }
+        },
+    ]
+    got = []
+    for val in find_by_key(simple_secret_yaml, target):
         got.append(val)
     assert got == expected
 
@@ -139,7 +168,7 @@ def test_get_all_values():
     input = {"data": {"username": "YWRtaW4=", "password": "MWYyZDFlMmU2N2Rm"}}
     expected = ["YWRtaW4=", "MWYyZDFlMmU2N2Rm"]
     got = []
-    for val in get_all_values(input):
+    for _, val in get_all_values(input):
         got.append(val)
     assert got == expected
 
@@ -169,12 +198,12 @@ def test_get_all_values_nested_messy_yaml():
         "MWYyZDFlMmU2N2Rm",
         "nginx",
         "nginx:1.14.2",
-        80,
+        "80",
         "nginx_stable",
         "nginx:stable",
-        443,
+        "443",
     ]
     got = []
-    for val in get_all_values(input):
+    for _, val in get_all_values(input):
         got.append(val)
     assert got == expected

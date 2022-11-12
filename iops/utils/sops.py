@@ -1,7 +1,7 @@
 import os
 import re
 from pathlib import Path
-from typing import Dict, List, Match, Optional, Pattern
+from typing import Dict, List, Match, Optional, Pattern, Tuple
 
 from iops.utils import load_yaml
 
@@ -23,15 +23,14 @@ def _match_config_files(path: Path) -> List[Path]:
     return root_matches + nested_matches
 
 
-def ensure_dotsops(path: Path) -> Optional[Dict]:
+# Have a look at this later maybe
+def ensure_dotsops(path: Path) -> Tuple[Path, Optional[Dict]]:
     matches: List[Path] = _match_config_files(path)
-    if not matches:
-        return None
-    elif len(matches) > 1:
-        return None
+    if not matches or len(matches) > 1:
+        return Path("NonePath"), {}
     else:
-        dot_sops_path: Path = path / matches[0]
-        return load_yaml(dot_sops_path)
+        good_match = path / matches[0]
+        return good_match, load_yaml(good_match)
 
 
 def verify_encryption_regex(value: str) -> Optional[Match[str]]:

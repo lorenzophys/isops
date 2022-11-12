@@ -42,3 +42,32 @@ def simple_enc_secret_yaml():
 def nested_yaml():
     path = os.path.join(SAMPLES_PATH, "nested_sample.yaml")
     return load_yaml(path)
+
+
+# @pytest.fixture(scope="function")
+# def directory_tree(tmp_path):
+#     # Make root dir
+#     root = tmp_path / "root"
+#     root.mkdir()
+#     # Make .sops/.sops.yaml
+#     dotsops = root / ".sops"
+#     dotsops.mkdir()
+#     dotsops_yaml = dotsops / ".sops.yaml"
+#     dotsops_yaml.write_text("CONTENT")
+#     # Make manifests
+#     manifests = root / "manifests"
+#     manifests.mkdir()
+#     # Test deploy
+#     deploy = manifests / "deployment.yaml"
+#     # Make secrets
+#     secrets = manifests / "secrets"
+#     secrets.mkdir()
+
+#     list_dirs = os.walk(root)
+#     for root, dirs, files in list_dirs:
+#         for d in dirs:
+#             splitted = str(os.path.join(root, d)).split("/")[10:]
+#             print("/".join(splitted))
+#         for f in files:
+#             splitted = str(os.path.join(root, f)).split("/")[10:]
+#             print("/".join(splitted))

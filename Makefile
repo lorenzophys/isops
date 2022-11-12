@@ -19,7 +19,7 @@ format:
 lint:
 	flake8 ${MAIN_PATH} ${TESTS_PATH}
 	mypy ${MAIN_PATH}
-	pydocstyle ${MAIN_PATH}
+	# pydocstyle ${MAIN_PATH}
 
 .PHONY: test
 test:
