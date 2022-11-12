@@ -7,6 +7,7 @@ clean:
 	find . -name '.DS_Store' -exec rm -rf {} +
 	find . -name '.pytest_cache' -exec rm -rf {} +
 	find . -name '.mypy_cache' -exec rm -rf {} +
+	find . -name '.tox' -exec rm -rf {} +
 	rm -f .coverage
 
 .PHONY: format
@@ -27,3 +28,7 @@ test:
 .PHONY: coverage
 coverage:
 	pytest --no-cov-on-fail --cov-report term-missing --cov=${MAIN_PATH} tests/
+
+.PHONY: tox
+tox:
+	tox --recreate --parallel
