@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, List, Pattern, Tuple
+from typing import Dict, List, Pattern
 
 import click
 
@@ -28,14 +28,14 @@ def _extract_bad_keys(secret: Dict, encrypted_regex: Pattern[str]) -> List[str]:
 
 @click.version_option(__version__, "--version", message=__version__)
 @click.help_option("-h", "--help")
-@click.argument("path", nargs=-1, type=click.Path())
+@click.argument("path", nargs=1, type=click.Path())
 @click.command(no_args_is_help=True)
 @click.pass_context
-def cli(ctx: click.Context, path: Tuple[str, ...]) -> None:
+def cli(ctx: click.Context, path: Path) -> None:
     """Top level command."""
     ctx.ensure_object(dict)
 
-    received_path = Path(path[0])
+    received_path = Path(path)
 
     click.echo("START")  # verbose
 
