@@ -27,6 +27,18 @@ def example_dotspos_yaml():
 
 
 @pytest.fixture(scope="module")
+def example_dotspos_yaml_no_creation_rules():
+    path = os.path.join(SAMPLES_PATH, ".sops_no_creation_rules.yaml")
+    return load_yaml(path)
+
+
+@pytest.fixture(scope="module")
+def example_dotspos_yaml_default_regex():
+    path = os.path.join(SAMPLES_PATH, ".sops_default_regex.yaml")
+    return load_yaml(path)
+
+
+@pytest.fixture(scope="module")
 def simple_secret_yaml():
     path = os.path.join(SAMPLES_PATH, "simple_secret.yaml")
     return load_yaml(path)

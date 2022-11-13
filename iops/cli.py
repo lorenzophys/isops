@@ -44,7 +44,7 @@ def cli(ctx: click.Context, path: Path) -> None:
 
     if dotsops_content == {}:
         click.secho(
-            message="No .sops.yaml (or too many) found in the root or in the .sops directory.",
+            message="No valid .sops.yaml (or too many) found in the root or .sops directory.",
             bold=True,
             fg="red",
         )
@@ -54,7 +54,7 @@ def cli(ctx: click.Context, path: Path) -> None:
 
     if "creation_rules" not in dotsops_content.keys():
         click.secho(
-            message="'creation_rules' section not found.",
+            message=f"Error in {dotsops_path}: 'creation_rules' section not found.",
             bold=True,
             fg="red",
         )
