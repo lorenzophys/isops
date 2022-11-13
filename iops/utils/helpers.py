@@ -1,17 +1,17 @@
 import os
 import re
 from pathlib import Path
-from typing import Dict, Generator, Optional, Pattern, Tuple
+from typing import Dict, Generator, Pattern, Tuple
 
 import yaml
 
 
-def load_yaml(path: Path) -> Optional[Dict]:
+def load_yaml(path: Path) -> Dict:
     with open(path, "r") as stream:
         try:
             return yaml.safe_load(stream)
         except yaml.YAMLError:
-            return None
+            return {}
 
 
 def find_by_key(data: Dict, target: Pattern[str]) -> Generator[Dict, None, None]:

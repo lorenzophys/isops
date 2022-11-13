@@ -1,9 +1,6 @@
-from pathlib import Path
-
 import pytest
-import yaml
 
-from iops.utils import ensure_dotsops, find_by_key, get_all_values
+from iops.utils import find_by_key, get_all_values
 
 
 def test_is_yaml_loaded_correctly(example_good_deploy_yaml):
@@ -33,56 +30,7 @@ def test_is_yaml_loaded_correctly(example_good_deploy_yaml):
 
 
 def test_bad_yaml_handled_correctly(example_bad_yaml):
-    assert example_bad_yaml is None
-
-
-@pytest.mark.parametrize("config", ["root/.sops.yaml", "root/.sops.yml"])
-def test_ensure_dotsops_yaml_in_root_dir(example_dotspos_yaml, tmp_path, config):
-    dotsops = tmp_path / config
-    dotsops.parent.mkdir()
-    dotsops.write_text(yaml.dump(example_dotspos_yaml))
-    root = tmp_path / "root"
-    dotsops_path, content = ensure_dotsops(root)
-    assert dotsops_path == dotsops
-    assert content != {}
-
-
-@pytest.mark.parametrize("config", [".sops/.sops.yaml", ".sops/.sops.yml"])
-def test_ensure_dotsops_in_dotsops_dir(example_dotspos_yaml, tmp_path, config):
-    root = tmp_path / "root"
-    root.mkdir()
-    dotsops = root / config
-    dotsops.parent.mkdir()
-    dotsops.write_text(yaml.dump(example_dotspos_yaml))
-    root = tmp_path / "root"
-    dotsops_path, content = ensure_dotsops(root)
-    assert dotsops_path == dotsops
-    assert content != {}
-
-
-def test_ensure_no_dotsops(tmp_path):
-    root = tmp_path / "root"
-    root.mkdir()
-    dotsops = root / "halo.yaml"
-    dotsops.write_text("I'm not .sops.yaml")
-    root = tmp_path / "root"
-    dotsops_path, content = ensure_dotsops(root)
-    assert dotsops_path == Path("NonePath")
-    assert content == {}
-
-
-def test_ensure_too_many_dotsops(example_dotspos_yaml, tmp_path):
-    root = tmp_path / "root"
-    root.mkdir()
-    dotsops_1 = root / ".sops/.sops.yaml"
-    dotsops_1.parent.mkdir()
-    dotsops_1.write_text(yaml.dump(example_dotspos_yaml))
-    dotsops_2 = root / ".sops.yaml"
-    dotsops_2.write_text(yaml.dump(example_dotspos_yaml))
-    root = tmp_path / "root"
-    dotsops_path, content = ensure_dotsops(root)
-    assert dotsops_path == Path("NonePath")
-    assert content == {}
+    assert example_bad_yaml == {}
 
 
 def test_find_by_key_one_target(simple_secret_yaml):

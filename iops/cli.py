@@ -17,7 +17,7 @@ DEFAULT_PATH_REGEX = r"\.ya?ml"
 DEFAULT_ENCRYPTED_REGEX = r""
 
 
-def _extract_keys(secret: Dict, encrypted_regex: Pattern[str]) -> Tuple[List[str]]:
+def _extract_keys(secret: Dict, encrypted_regex: Pattern[str]) -> Tuple[List[str], ...]:
     bad_keys: List[str] = []
     good_keys: List[str] = []
     for match in find_by_key(secret, encrypted_regex):
@@ -43,13 +43,24 @@ def cli(ctx: click.Context, path: Path) -> None:
     dotsops_path, dotsops_content = ensure_dotsops(received_path)
 
     if dotsops_content == {}:
-        click.secho(message="No .sops.yaml", bold=True, fg="red")  # always
-        ctx.exit(1)
-    else:
-        creation_rules = dotsops_content["creation_rules"]
         click.secho(
-            message=f"Found config file in {dotsops_path}", bold=True
-        )  # verbose
+            message="No .sops.yaml (or too many) found in the root or in the .sops directory.",
+            bold=True,
+            fg="red",
+        )
+        ctx.exit(1)
+
+    click.secho(message=f"Found config file in {dotsops_path}", bold=True)
+
+    if "creation_rules" not in dotsops_content.keys():
+        click.secho(
+            message="'creation_rules' section not found.",
+            bold=True,
+            fg="red",
+        )
+        ctx.exit(1)
+
+    creation_rules = dotsops_content["creation_rules"]
 
     for rule in creation_rules:
         if "path_regex" not in rule.keys():
@@ -58,16 +69,20 @@ def cli(ctx: click.Context, path: Path) -> None:
             rule["encrypted_regex"] = DEFAULT_ENCRYPTED_REGEX
 
         path_regex = rule["path_regex"]
+        encrypted_regex = rule["encrypted_regex"]
 
         for file in find_all_files_by_regex(path_regex, received_path):
-            encrypted_regex = rule["encrypted_regex"]
             secret = load_yaml(file)
-            if secret is None:
-                click.secho(message="Invalid YAML!", bold=True, fg="red")  # always
+
+            good_keys: List[str]
+            bad_keys: List[str]
+
+            if secret == {}:
+                click.secho(message="Invalid YAML!", bold=True, fg="red")
                 ctx.exit(1)
             else:
                 good_keys, bad_keys = _extract_keys(secret, encrypted_regex)
-                all_keys = good_keys + bad_keys
+                all_keys: List[str] = good_keys + bad_keys
                 all_keys.sort()
 
             for key in all_keys:
@@ -78,7 +93,7 @@ def cli(ctx: click.Context, path: Path) -> None:
                     click.secho(message=f"{file}::{key} ", bold=False, nl=False)
                     click.secho(message="[UNSAFE]", bold=False, fg="red")
 
-    if not bad_keys:
-        ctx.exit(0)
-    else:
+    if bad_keys:
         ctx.exit(1)
+
+    ctx.exit(0)

@@ -23,8 +23,7 @@ def _match_config_files(path: Path) -> List[Path]:
     return root_matches + nested_matches
 
 
-# Have a look at this later maybe
-def ensure_dotsops(path: Path) -> Tuple[Path, Optional[Dict]]:
+def ensure_dotsops(path: Path) -> Tuple[Path, Dict]:
     matches: List[Path] = _match_config_files(path)
     if not matches or len(matches) > 1:
         return Path("NonePath"), {}
