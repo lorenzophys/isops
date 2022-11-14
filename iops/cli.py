@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 from typing import Dict, List, Pattern, Tuple
 
@@ -72,13 +73,17 @@ def cli(ctx: click.Context, path: Path) -> None:
         encrypted_regex = rule["encrypted_regex"]
 
         for file in find_all_files_by_regex(path_regex, received_path):
+            dotsops_pattern: Pattern[str] = re.compile(r".sops.ya?ml")
+            if dotsops_pattern.search(str(file)):
+                continue
+
             secret = load_yaml(file)
 
             good_keys: List[str]
             bad_keys: List[str]
 
             if secret == {}:
-                click.secho(message="Invalid YAML!", bold=True, fg="red")
+                click.secho(message=f"{file} is not a valid YAML!", bold=True, fg="red")
                 ctx.exit(1)
             else:
                 good_keys, bad_keys = _extract_keys(secret, encrypted_regex)

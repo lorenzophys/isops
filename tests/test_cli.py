@@ -113,8 +113,6 @@ def test_cli_main_no_regex_path_no_enc_regex(
 
     expected_output = (
         f"Found config file in {dotsops_path}\n"
-        f"{dotsops_path}::fp [UNSAFE]\n"
-        f"{dotsops_path}::pgp [UNSAFE]\n"
         f"{yaml_path}::apiVersion [UNSAFE]\n"
         f"{yaml_path}::created_at [UNSAFE]\n"
         f"{yaml_path}::enc [UNSAFE]\n"
@@ -131,6 +129,25 @@ def test_cli_main_no_regex_path_no_enc_regex(
         f"{yaml_path}::uid [UNSAFE]\n"
         f"{yaml_path}::username [SAFE]\n"
         f"{yaml_path}::version [UNSAFE]\n"
+    )
+
+    assert result.exit_code == 1
+    assert result.output == expected_output
+
+
+def test_cli_main_secret_is_not_valid_yaml(
+    simple_dir_struct, example_bad_yaml, example_dotspos_yaml_default_regex
+):
+    # the secret is no a valid yaml
+
+    dotsops_path, yaml_path, root, _ = simple_dir_struct(
+        example_bad_yaml, config=example_dotspos_yaml_default_regex
+    )
+    runner = CliRunner()
+    result = runner.invoke(cli, [root])
+
+    expected_output = (
+        f"Found config file in {dotsops_path}\n{yaml_path} is not a valid YAML!\n"
     )
 
     assert result.exit_code == 1
