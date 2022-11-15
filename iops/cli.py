@@ -79,6 +79,9 @@ def cli(ctx: click.Context, path: Path) -> None:
 
             secret = load_yaml(file)
 
+            if "sops" in secret:
+                secret.pop("sops", None)
+
             good_keys: List[str]
             bad_keys: List[str]
 

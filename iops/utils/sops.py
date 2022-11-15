@@ -24,6 +24,16 @@ def _match_config_files(path: Path) -> List[Path]:
 
 
 def ensure_dotsops(path: Path) -> Tuple[Path, Dict]:
+    """Ensure that the sops config file is present.
+
+    Args:
+        path (Path): the root directory where the files to check
+            are located.
+
+    Returns:
+        Tuple[Path, Dict]: Both the path of the config file and
+            it's content are returned.
+    """
     matches: List[Path] = _match_config_files(path)
     if not matches or len(matches) > 1:
         return Path("NonePath"), {}
@@ -33,6 +43,15 @@ def ensure_dotsops(path: Path) -> Tuple[Path, Dict]:
 
 
 def verify_encryption_regex(value: str) -> Optional[Match[str]]:
+    """Verify that a value matches the encryption regex.
+
+    Args:
+        value (str): A string to validate.
+
+    Returns:
+        Optional[Match[str]]: Returns the full match object or None
+            if the value doesn't match.
+    """
     encryption_pattern: Pattern[str] = re.compile(
         r"^ENC\[AES256_GCM,data:(.+),iv:(.+),tag:(.+),type:(.+)\]"
     )
