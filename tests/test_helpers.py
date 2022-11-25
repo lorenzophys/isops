@@ -34,8 +34,8 @@ def test_bad_yaml_handled_correctly(example_bad_yaml):
 
 
 def test_find_by_key_one_target(simple_secret_yaml):
-    target = "data"
-    expected = [{target: {"username": "YWRtaW4=", "password": "MWYyZDFlMmU2N2Rm"}}]
+    target = "^data"
+    expected = [{"data": {"username": "YWRtaW4=", "password": "MWYyZDFlMmU2N2Rm"}}]
     got = []
     for val in find_by_key(simple_secret_yaml, target):
         got.append(val)
@@ -43,8 +43,8 @@ def test_find_by_key_one_target(simple_secret_yaml):
 
 
 def test_find_by_key_multiple_targets(example_good_deploy_yaml):
-    target = "app"
-    expected = [{target: "nginx"}] * 3
+    target = "^app"
+    expected = [{"app": "nginx"}] * 3
     got = []
     for val in find_by_key(example_good_deploy_yaml, target):
         got.append(val)

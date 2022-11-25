@@ -14,7 +14,7 @@ from iops.utils import (
     verify_encryption_regex,
 )
 
-DEFAULT_PATH_REGEX = r"\.ya?ml"
+DEFAULT_PATH_REGEX = r"\.ya?ml$"
 DEFAULT_ENCRYPTED_REGEX = r""
 
 
@@ -53,7 +53,7 @@ def cli(ctx: click.Context, path: Path) -> None:
 
     click.secho(message=f"Found config file in {dotsops_path}", bold=True)
 
-    if "creation_rules" not in dotsops_content.keys():
+    if "creation_rules" not in dotsops_content:
         click.secho(
             message=f"Error in {dotsops_path}: 'creation_rules' section not found.",
             bold=True,
@@ -63,14 +63,34 @@ def cli(ctx: click.Context, path: Path) -> None:
 
     creation_rules = dotsops_content["creation_rules"]
 
+    good_keys: List[str] = []
+    bad_keys: List[str] = []
+
     for rule in creation_rules:
         if "path_regex" not in rule.keys():
             rule["path_regex"] = DEFAULT_PATH_REGEX
         if "encrypted_regex" not in rule.keys():
             rule["encrypted_regex"] = DEFAULT_ENCRYPTED_REGEX
 
-        path_regex = rule["path_regex"]
-        encrypted_regex = rule["encrypted_regex"]
+        try:
+            path_regex = rule["path_regex"]
+            re.compile(path_regex)
+        except re.error:
+            click.secho(
+                message=f"Invalid regex for 'path_regex' in {dotsops_path}",
+                bold=False,
+                fg="red",
+            )
+
+        try:
+            encrypted_regex = rule["encrypted_regex"]
+            re.compile(encrypted_regex)
+        except re.error:
+            click.secho(
+                message=f"Invalid regex for 'encrypted_regex' in {dotsops_path}",
+                bold=False,
+                fg="red",
+            )
 
         for file in find_all_files_by_regex(path_regex, received_path):
             dotsops_pattern: Pattern[str] = re.compile(r".sops.ya?ml")
@@ -81,9 +101,6 @@ def cli(ctx: click.Context, path: Path) -> None:
 
             if "sops" in secret:
                 secret.pop("sops", None)
-
-            good_keys: List[str]
-            bad_keys: List[str]
 
             if secret == {}:
                 click.secho(message=f"{file} is not a valid YAML!", bold=True, fg="red")

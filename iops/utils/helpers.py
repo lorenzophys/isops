@@ -34,8 +34,9 @@ def find_by_key(data: Dict, target: Pattern[str]) -> Generator[Dict, None, None]
             of the 'target' key of the 'data' dictionary
     """
     pattern: Pattern[str] = re.compile(target)
+
     for key, value in data.items():
-        if pattern.match(key):
+        if pattern.search(key):
             yield {key: value}
         elif isinstance(value, dict):
             yield from find_by_key(value, target)
@@ -77,9 +78,13 @@ def find_all_files_by_regex(
         Generator[Path, None, None]: Iterable of all the files
             in 'path' that match the 'regex'.
     """
-    pattern = re.compile(regex)
+    pattern: Pattern[str] = re.compile(regex)
+
     for root, _, files in os.walk(path):
         for file in files:
-            match = pattern.search(file)
+            # print("FILE: ", os.path.join(root, file))
+            match = pattern.search(os.path.join(root, file))
+            # print("PATTERN: ", regex)
+            # print("MATCH: ", match)
             if match:
                 yield Path(os.path.join(root, file))

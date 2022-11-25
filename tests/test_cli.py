@@ -9,7 +9,7 @@ from iops.cli import cli
 def simple_dir_struct(tmp_path, example_dotspos_yaml):
     """Functional programming shenanigans"""
 
-    def _magic_stuff(yaml_to_test, config=example_dotspos_yaml):
+    def _internal(yaml_to_test, config=example_dotspos_yaml):
         dotsops = tmp_path / "root/.sops.yaml"
         dotsops.parent.mkdir()
         dotsops.write_text(yaml.dump(config))
@@ -18,7 +18,7 @@ def simple_dir_struct(tmp_path, example_dotspos_yaml):
         root = tmp_path / "root"
         return str(dotsops), str(secret), str(root), yaml_to_test
 
-    return _magic_stuff
+    return _internal
 
 
 def test_cli_main_safe_file(simple_dir_struct, simple_enc_secret_yaml):
