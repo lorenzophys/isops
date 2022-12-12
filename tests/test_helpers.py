@@ -1,6 +1,6 @@
 import pytest
 
-from iops.utils import find_by_key, get_all_values
+from iops.utils import all_dict_values, find_by_key
 
 
 def test_is_yaml_loaded_correctly(example_good_deploy_yaml):
@@ -120,16 +120,16 @@ def test_find_by_key_but_no_match(nested_yaml):
     assert got == []
 
 
-def test_get_all_values():
+def test_all_dict_values():
     input = {"data": {"username": "YWRtaW4=", "password": "MWYyZDFlMmU2N2Rm"}}
     expected = ["YWRtaW4=", "MWYyZDFlMmU2N2Rm"]
     got = []
-    for _, val in get_all_values(input):
+    for _, val in all_dict_values(input):
         got.append(val)
     assert got == expected
 
 
-def test_get_all_values_nested_messy_yaml():
+def test_all_dict_values_nested_messy_yaml():
     input = {
         "data": {
             "nested": {"username": "YWRtaW4=", "password": "MWYyZDFlMmU2N2Rm"},
@@ -160,6 +160,6 @@ def test_get_all_values_nested_messy_yaml():
         "443",
     ]
     got = []
-    for _, val in get_all_values(input):
+    for _, val in all_dict_values(input):
         got.append(val)
     assert got == expected

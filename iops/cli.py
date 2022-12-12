@@ -6,10 +6,9 @@ import click
 
 from iops import __version__
 from iops.utils import (
-    ensure_dotsops,
+    all_dict_values,
     find_all_files_by_regex,
     find_by_key,
-    get_all_values,
     load_yaml,
     verify_encryption_regex,
 )
@@ -18,11 +17,13 @@ DEFAULT_PATH_REGEX = r"\.ya?ml$"
 DEFAULT_ENCRYPTED_REGEX = r""
 
 
-def _extract_keys(secret: Dict, encrypted_regex: Pattern[str]) -> Tuple[List[str], ...]:
+def _categorize_keys_based_on_their_values(
+    secret: Dict, encrypted_regex: Pattern[str]
+) -> Tuple[List[str], ...]:
     bad_keys: List[str] = []
     good_keys: List[str] = []
     for match in find_by_key(secret, encrypted_regex):
-        for key, value in get_all_values(match):
+        for key, value in all_dict_values(match):
             if not verify_encryption_regex(str(value)):
                 bad_keys.append(key)
             else:
@@ -30,38 +31,50 @@ def _extract_keys(secret: Dict, encrypted_regex: Pattern[str]) -> Tuple[List[str
     return good_keys, bad_keys
 
 
+def _validate_regex(ctx: click.Context, param: click.Parameter, value: str):
+    try:
+        re.compile(value)
+        return value
+    except re.error:
+        raise click.BadParameter(
+            param=param, message=f"{value} is not a valid regex."
+        ) from None
+
+
+@click.option(
+    "--config-regex",
+    type=str,
+    callback=_validate_regex,
+    required=True,
+    help="The regex that matches all the config files to use.",
+)
 @click.version_option(__version__, "--version", message=__version__)
 @click.help_option("-h", "--help")
 @click.argument("path", nargs=1, type=click.Path())
 @click.command(no_args_is_help=True)
 @click.pass_context
-def cli(ctx: click.Context, path: Path) -> None:
+def cli(ctx: click.Context, path: Path, config_regex: Pattern[str]) -> None:
     """Top level command."""
     ctx.ensure_object(dict)
 
     received_path = Path(path)
 
-    dotsops_path, dotsops_content = ensure_dotsops(received_path)
+    creation_rules = []
+    for match_path in find_all_files_by_regex(config_regex, received_path):
+        config = load_yaml(match_path)
+        try:
+            creation_rules += config["creation_rules"]
+            click.secho(message=f"Found config file: {match_path}", bold=True)
+        except KeyError:
+            continue
 
-    if dotsops_content == {}:
+    if not creation_rules:
         click.secho(
-            message="No valid .sops.yaml (or too many) found in the root or .sops directory.",
+            message="No valid config file found.",
             bold=True,
             fg="red",
         )
         ctx.exit(1)
-
-    click.secho(message=f"Found config file in {dotsops_path}", bold=True)
-
-    if "creation_rules" not in dotsops_content:
-        click.secho(
-            message=f"Error in {dotsops_path}: 'creation_rules' section not found.",
-            bold=True,
-            fg="red",
-        )
-        ctx.exit(1)
-
-    creation_rules = dotsops_content["creation_rules"]
 
     good_keys: List[str] = []
     bad_keys: List[str] = []
@@ -77,40 +90,39 @@ def cli(ctx: click.Context, path: Path) -> None:
             re.compile(path_regex)
         except re.error:
             click.secho(
-                message=f"Invalid regex for 'path_regex' in {dotsops_path}",
+                message=f"Invalid regex for 'path_regex': {path_regex}",
                 bold=False,
                 fg="red",
             )
+            ctx.exit(1)
 
         try:
             encrypted_regex = rule["encrypted_regex"]
             re.compile(encrypted_regex)
         except re.error:
             click.secho(
-                message=f"Invalid regex for 'encrypted_regex' in {dotsops_path}",
+                message=f"Invalid regex for 'encrypted_regex': {encrypted_regex}",
                 bold=False,
                 fg="red",
             )
+            ctx.exit(1)
 
         for file in find_all_files_by_regex(path_regex, received_path):
-            dotsops_pattern: Pattern[str] = re.compile(r".sops.ya?ml")
-            if dotsops_pattern.search(str(file)):
-                continue
-
             secret = load_yaml(file)
-
-            if "sops" in secret:
-                secret.pop("sops", None)
 
             if secret == {}:
                 click.secho(message=f"{file} is not a valid YAML!", bold=True, fg="red")
                 ctx.exit(1)
-            else:
-                good_keys, bad_keys = _extract_keys(secret, encrypted_regex)
-                all_keys: List[str] = good_keys + bad_keys
-                all_keys.sort()
 
-            for key in all_keys:
+            if "sops" in secret:
+                secret.pop("sops", None)
+
+            good_keys, bad_keys = _categorize_keys_based_on_their_values(
+                secret, encrypted_regex
+            )
+            all_keys: List[str] = good_keys + bad_keys
+
+            for key in sorted(all_keys):
                 if key in good_keys:
                     click.secho(message=f"{file}::{key} ", bold=False, nl=False)
                     click.secho(message="[SAFE]", bold=False, fg="green")

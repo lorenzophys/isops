@@ -45,7 +45,7 @@ def find_by_key(data: Dict, target: Pattern[str]) -> Generator[Dict, None, None]
                 yield from find_by_key(elem, target)
 
 
-def get_all_values(data: Dict) -> Generator[Tuple[str, str], None, None]:
+def all_dict_values(data: Dict) -> Generator[Tuple[str, str], None, None]:
     """Get all the values in a dictionary.
 
     Args:
@@ -57,10 +57,10 @@ def get_all_values(data: Dict) -> Generator[Tuple[str, str], None, None]:
     """
     for key, value in data.items():
         if isinstance(value, dict):
-            yield from get_all_values(value)
+            yield from all_dict_values(value)
         elif isinstance(value, list):
             for elem in value:
-                yield from get_all_values(elem)
+                yield from all_dict_values(elem)
         elif not isinstance(value, dict):
             yield key, str(value)
 
@@ -79,12 +79,8 @@ def find_all_files_by_regex(
             in 'path' that match the 'regex'.
     """
     pattern: Pattern[str] = re.compile(regex)
-
     for root, _, files in os.walk(path):
         for file in files:
-            # print("FILE: ", os.path.join(root, file))
             match = pattern.search(os.path.join(root, file))
-            # print("PATTERN: ", regex)
-            # print("MATCH: ", match)
             if match:
                 yield Path(os.path.join(root, file))
