@@ -7,7 +7,7 @@ from iops.utils import load_yaml
 
 
 def _match_config_files(path: Path) -> List[Path]:
-    pattern: Pattern[str] = re.compile(r".sops.ya?ml")
+    pattern: Pattern[str] = re.compile(r"\.sops\.ya?ml")
     dotsops_dir: str = ".sops"
     root_matches: List[Path] = [
         Path(file) for file in os.listdir(path) if pattern.fullmatch(file)

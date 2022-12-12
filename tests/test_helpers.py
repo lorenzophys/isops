@@ -112,6 +112,14 @@ def test_find_by_key_target_is_in_a_messy_nested_yaml(nested_yaml):
     assert got == expected
 
 
+def test_find_by_key_but_no_match(nested_yaml):
+    key = "idontexist"
+    got = []
+    for val in find_by_key(nested_yaml, key):
+        got.append(val)
+    assert got == []
+
+
 def test_get_all_values():
     input = {"data": {"username": "YWRtaW4=", "password": "MWYyZDFlMmU2N2Rm"}}
     expected = ["YWRtaW4=", "MWYyZDFlMmU2N2Rm"]
