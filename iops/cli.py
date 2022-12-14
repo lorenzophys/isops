@@ -31,7 +31,7 @@ def _categorize_keys_based_on_their_values(
     return good_keys, bad_keys
 
 
-def _validate_regex(ctx: click.Context, param: click.Parameter, value: str):
+def _validate_regex(ctx: click.Context, param: click.Parameter, value: str) -> str:
     try:
         re.compile(value)
         return value
@@ -66,6 +66,7 @@ def cli(ctx: click.Context, path: Path, config_regex: Pattern[str]) -> None:
             creation_rules += config["creation_rules"]
             click.secho(message=f"Found config file: {match_path}", bold=True)
         except KeyError:
+            click.secho(message=f"WARNING: skipping '{match_path}'", fg="yellow")
             continue
 
     if not creation_rules:
@@ -78,6 +79,7 @@ def cli(ctx: click.Context, path: Path, config_regex: Pattern[str]) -> None:
 
     good_keys: List[str] = []
     bad_keys: List[str] = []
+    found_bad_keys: bool = False
 
     for rule in creation_rules:
         if "path_regex" not in rule.keys():
@@ -122,6 +124,9 @@ def cli(ctx: click.Context, path: Path, config_regex: Pattern[str]) -> None:
             )
             all_keys: List[str] = good_keys + bad_keys
 
+            if bad_keys:
+                found_bad_keys = True
+
             for key in sorted(all_keys):
                 if key in good_keys:
                     click.secho(message=f"{file}::{key} ", bold=False, nl=False)
@@ -130,7 +135,7 @@ def cli(ctx: click.Context, path: Path, config_regex: Pattern[str]) -> None:
                     click.secho(message=f"{file}::{key} ", bold=False, nl=False)
                     click.secho(message="[UNSAFE]", bold=False, fg="red")
 
-    if bad_keys:
+    if found_bad_keys:
         ctx.exit(1)
 
     ctx.exit(0)

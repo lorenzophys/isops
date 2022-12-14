@@ -1,0 +1,3 @@
+creation_rules:
+  - path_regex: (.*)?secret.yaml$
+    encrypted_regex: "^(metadata)$"

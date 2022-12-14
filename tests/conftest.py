@@ -1,11 +1,28 @@
 import os
 
 import pytest
+import yaml
 
 from iops.utils import load_yaml
 
 TESTS_PATH = os.path.dirname(os.path.realpath(__file__))
 SAMPLES_PATH = os.path.join(TESTS_PATH, "samples")
+
+
+@pytest.fixture(scope="function")
+def simple_dir_struct(tmp_path, example_dotspos_yaml):
+    """Nobody forbids me to make a fixture that returns a function"""
+
+    def _internal(yaml_to_test, config=example_dotspos_yaml):
+        dotsops = tmp_path / "root/.sops.yaml"
+        dotsops.parent.mkdir()
+        dotsops.write_text(yaml.dump(config))
+        secret = tmp_path / "root/secret.yaml"
+        secret.write_text(yaml.dump(yaml_to_test))
+        root = tmp_path / "root"
+        return str(dotsops), str(secret), str(root), yaml_to_test
+
+    return _internal
 
 
 @pytest.fixture(scope="module")
@@ -56,30 +73,19 @@ def nested_yaml():
     return load_yaml(path)
 
 
-# @pytest.fixture(scope="function")
-# def directory_tree(tmp_path):
-#     # Make root dir
-#     root = tmp_path / "root"
-#     root.mkdir()
-#     # Make .sops/.sops.yaml
-#     dotsops = root / ".sops"
-#     dotsops.mkdir()
-#     dotsops_yaml = dotsops / ".sops.yaml"
-#     dotsops_yaml.write_text("CONTENT")
-#     # Make manifests
-#     manifests = root / "manifests"
-#     manifests.mkdir()
-#     # Test deploy
-#     deploy = manifests / "deployment.yaml"
-#     # Make secrets
-#     secrets = manifests / "secrets"
-#     secrets.mkdir()
+@pytest.fixture(scope="module")
+def dot_sops_bad_path_regex():
+    path = os.path.join(SAMPLES_PATH, ".sops_bad_path_regex.yaml")
+    return load_yaml(path)
 
-#     list_dirs = os.walk(root)
-#     for root, dirs, files in list_dirs:
-#         for d in dirs:
-#             splitted = str(os.path.join(root, d)).split("/")[10:]
-#             print("/".join(splitted))
-#         for f in files:
-#             splitted = str(os.path.join(root, f)).split("/")[10:]
-#             print("/".join(splitted))
+
+@pytest.fixture(scope="module")
+def dot_sops_bad_encrypted_regex():
+    path = os.path.join(SAMPLES_PATH, ".sops_bad_encrypted_regex.yaml")
+    return load_yaml(path)
+
+
+@pytest.fixture(scope="module")
+def dot_sops_one_rule():
+    path = os.path.join(SAMPLES_PATH, ".sops_one_rule.yaml")
+    return load_yaml(path)

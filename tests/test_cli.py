@@ -1,24 +1,7 @@
-import pytest
 import yaml
 from click.testing import CliRunner
 
 from iops.cli import cli
-
-
-@pytest.fixture(scope="function")
-def simple_dir_struct(tmp_path, example_dotspos_yaml):
-    """Functional programming shenanigans"""
-
-    def _internal(yaml_to_test, config=example_dotspos_yaml):
-        dotsops = tmp_path / "root/.sops.yaml"
-        dotsops.parent.mkdir()
-        dotsops.write_text(yaml.dump(config))
-        secret = tmp_path / "root/secret.yaml"
-        secret.write_text(yaml.dump(yaml_to_test))
-        root = tmp_path / "root"
-        return str(dotsops), str(secret), str(root), yaml_to_test
-
-    return _internal
 
 
 def test_cli_main_safe_file(simple_dir_struct, simple_enc_secret_yaml):
@@ -74,7 +57,9 @@ def test_cli_main_dotsops_no_creation_rules(
     runner = CliRunner()
     result = runner.invoke(cli, [root, "--config-regex", ".sops.ya?ml"])
 
-    expected_output = "No valid config file found.\n"
+    expected_output = (
+        f"WARNING: skipping '{dotsops_path}'\nNo valid config file found.\n"
+    )
 
     assert result.exit_code == 1
     assert result.output == expected_output
@@ -104,6 +89,108 @@ def test_cli_main_no_regex_path_no_enc_regex(
         f"{yaml_path}::type [UNSAFE]\n"
         f"{yaml_path}::uid [UNSAFE]\n"
         f"{yaml_path}::username [SAFE]\n"
+    )
+
+    assert result.exit_code == 1
+    assert result.output == expected_output
+
+
+def test_cli_invalid_regex_in_config_regex_option():
+    # invalid regex in --config-regex
+    runner = CliRunner()
+    result = runner.invoke(cli, [".", "--config-regex", "["])
+
+    assert result.exit_code == 2
+
+
+def test_cli_main_dotsops_bad_path_regex(
+    simple_dir_struct, simple_enc_secret_yaml, dot_sops_bad_path_regex
+):
+    # invalid regex in 'path_regex'
+
+    dotsops_path, yaml_path, root, _ = simple_dir_struct(
+        simple_enc_secret_yaml, config=dot_sops_bad_path_regex
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(cli, [root, "--config-regex", ".sops.ya?ml"])
+
+    expected_output = (
+        f"Found config file: {dotsops_path}\n" f"Invalid regex for 'path_regex': [\n"
+    )
+
+    assert result.exit_code == 1
+    assert result.output == expected_output
+
+
+def test_cli_main_dotsops_bad_encrypted_regex(
+    simple_dir_struct, simple_enc_secret_yaml, dot_sops_bad_encrypted_regex
+):
+    # invalid regex in 'path_regex'
+
+    dotsops_path, yaml_path, root, _ = simple_dir_struct(
+        simple_enc_secret_yaml, config=dot_sops_bad_encrypted_regex
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(cli, [root, "--config-regex", ".sops.ya?ml"])
+
+    expected_output = (
+        f"Found config file: {dotsops_path}\n"
+        f"Invalid regex for 'encrypted_regex': [\n"
+    )
+
+    assert result.exit_code == 1
+    assert result.output == expected_output
+
+
+def test_cli_two_config_files(
+    tmp_path, dot_sops_one_rule, example_dotspos_yaml, simple_enc_secret_yaml
+):
+    # two config files should merge the creation_rules
+
+    dotsops = tmp_path / "root/.sops.yaml"
+    dotsops.parent.mkdir()
+    dotsops_2 = tmp_path / "root/.sops_2.yaml"
+    dotsops.write_text(yaml.dump(example_dotspos_yaml))
+    dotsops_2.write_text(yaml.dump(dot_sops_one_rule))
+    secret = tmp_path / "root/secret.yaml"
+    secret.write_text(yaml.dump(simple_enc_secret_yaml))
+    root = tmp_path / "root"
+
+    runner = CliRunner()
+    result = runner.invoke(cli, [str(root), "--config-regex", ".sops(.*)?.ya?ml"])
+
+    expected_output = (
+        f"Found config file: {dotsops_2}\n"
+        f"Found config file: {dotsops}\n"
+        f"{secret}::name [UNSAFE]\n"
+        f"{secret}::namespace [UNSAFE]\n"
+        f"{secret}::resourceVersion [UNSAFE]\n"
+        f"{secret}::uid [UNSAFE]\n"
+        f"{secret}::password [SAFE]\n"
+        f"{secret}::username [SAFE]\n"
+    )
+
+    assert result.exit_code == 1
+    assert result.output == expected_output
+
+
+def test_cli_secret_not_valid_yaml(tmp_path, example_dotspos_yaml, example_bad_yaml):
+    # the secret is captured by the creation rules, but it's rubbish
+
+    dotsops = tmp_path / "root/.sops.yaml"
+    dotsops.parent.mkdir()
+    dotsops.write_text(yaml.dump(example_dotspos_yaml))
+    secret = tmp_path / "root/secret.yaml"
+    secret.write_text(yaml.dump(example_bad_yaml))
+    root = tmp_path / "root"
+
+    runner = CliRunner()
+    result = runner.invoke(cli, [str(root), "--config-regex", ".sops.ya?ml"])
+
+    expected_output = (
+        f"Found config file: {dotsops}\n" f"{secret} is not a valid YAML!\n"
     )
 
     assert result.exit_code == 1
