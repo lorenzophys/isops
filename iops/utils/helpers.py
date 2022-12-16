@@ -23,7 +23,7 @@ def load_yaml(path: Path) -> Dict:
 
 
 def find_by_key(data: Dict, target: Pattern[str]) -> Generator[Dict, None, None]:
-    """Find the innermost key, value pair children of a target key in a dictionary.
+    """Find the innermost key-value pair children of a target key in a dictionary.
 
     Args:
         data (Dict): the dictionary to parse
