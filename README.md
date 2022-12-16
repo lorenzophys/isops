@@ -87,8 +87,8 @@ examples
 │   ├── deployment.yaml
 │   └── service.yaml
 └── prod
-    ├── api-key-secret.yaml        <- Encrypted
-    ├── db-password-secret.yaml    <- Not ncrypted!
+    ├── api-key-secret.yaml        <- Not encrypted!
+    ├── db-password-secret.yaml    <- Encrypted!
     ├── deployment.yaml
     └── service.yaml
 ```
