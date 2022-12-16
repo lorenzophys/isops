@@ -16,7 +16,6 @@ IOPS (**I**s **OP**erations **S**ecure) is a minimal command line utility to hel
 
 `iops` can read the sops config file, scan the relevant yaml files and tell you precisely the status of each key in each file.
 
-[[]]
 
 ## CLI
 
