@@ -82,13 +82,13 @@ examples
 │   ├── sops-dev.yaml
 │   └── sops-prod.yaml
 ├── dev
-│   ├── api-key-secret.yaml
-│   ├── db-password-secret.yaml
+│   ├── api-key-secret.yaml        <- Encrypted
+│   ├── db-password-secret.yaml    <- Encrypted
 │   ├── deployment.yaml
 │   └── service.yaml
 └── prod
-    ├── api-key-secret.yaml
-    ├── db-password-secret.yaml
+    ├── api-key-secret.yaml        <- Encrypted
+    ├── db-password-secret.yaml    <- Not ncrypted!
     ├── deployment.yaml
     └── service.yaml
 ```
