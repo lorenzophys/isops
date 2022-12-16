@@ -12,7 +12,7 @@ __/\\\\\\\\\\\________/\\\\\________/\\\\\\\\\\\\\________/\\\\\\\\\\\___
         _\///////////________\/////________\///_________________\///////////_____
 ```
 
-IOPS (Is OPerationsSecure) is a minimal command line utility to help you ensure that your secrets are encrypted correctly with [sops](https://github.com/mozilla/sops) before committing them.
+IOPS (**I**s **OP**erations **S**ecure) is a minimal command line utility to help you ensure that your secrets are encrypted correctly with [sops](https://github.com/mozilla/sops) before committing them.
 
 `iops` can read the sops config file, scan the relevant yaml files and tell you precisely the status of each key in each file.
 
