@@ -37,9 +37,9 @@ You must provide a directory to scan and a regex that matches all the sops confi
 
 `iops` is called with a directory and a regex. Then:
 
-1. It finds the config files by the provided regex.
-2. For each `creation_rules` it finds the files according to the `path_regex`.
-3. For each file found, `iops` scans all the keys, no matter how nested the yaml is, in search for those key that match the `encrypted_regex`.
+1. It finds the config files using the provided regex.
+2. For each rule in `creation_rules` it finds the files according to the `path_regex`.
+3. For each file found, `iops` scans all the keys, no matter how nested the yaml is, in search for those keys that match the `encrypted_regex`.
 4. For each matched key, it checks if the associated value matches the sops regex `"^ENC\[AES256_GCM,data:(.+),iv:(.+),tag:(.+),type:(.+)\]"`.
 
 If the config file doesn't provide a `path_regex` or a `encrypted_regex`, the default values are, respectively, `"\.ya?ml$"` and `""`.
@@ -63,7 +63,7 @@ creation_rules:
     pgp: "FBC7B9E2A4F9289AC0C1D4843D16CEE4A27381B4"
 ```
 
-and a secret:
+and a `secret.yaml`:
 
 ```yaml
 apiVersion: v1
@@ -81,6 +81,8 @@ If you run `iops` you get a warning because your secret is not encrypted:
 user@laptop:~$ iops ./example --config-regex .sops.yaml
 Found config file: example/.sops.yaml
 example/secret.yaml::key [UNSAFE]
+user@laptop:~$ echo $?
+1
 ```
 
 If the same secret is encrypted with sops:
@@ -104,6 +106,8 @@ then `iops` will give you the green light:
 user@laptop:~$ iops ./example --config-regex .sops.yaml
 Found config file: example/.sops.yaml
 example/secret.yaml::key [SAFE]
+user@laptop:~$ echo $?
+0
 ```
 
 ## Another example
