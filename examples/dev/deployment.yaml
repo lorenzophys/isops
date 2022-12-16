@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-web-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-web-server
+  template:
+    metadata:
+      labels:
+        app: my-web-server
+    spec:
+      containers:
+      - name: my-web-server
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        env:
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-password
+              key: password
+        - name: API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: api-key
+              key: key
