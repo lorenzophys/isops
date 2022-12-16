@@ -31,7 +31,7 @@ Options:
                        [required]
 ```
 
-You must provide a directory to scan and a regex that captures all the sops configuration files.
+You must provide a directory to scan and a regex that matches all the sops configuration files.
 
 ## How does it work?
 
