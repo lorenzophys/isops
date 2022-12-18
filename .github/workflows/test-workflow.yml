@@ -56,7 +56,7 @@ jobs:
       - name: Install dependencies
         run: poetry install --no-interaction
       - name: Run tests and collect coverage
-        run: poetry run pytest --cov-report=xml --no-cov-on-fail --cov=./tests
+        run: poetry run pytest --cov-report=xml --no-cov-on-fail --cov=./iops
       - name: Upload coverage reports to Codecov with GitHub Action
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
