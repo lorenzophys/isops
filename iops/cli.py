@@ -1,3 +1,4 @@
+import random
 import re
 from pathlib import Path
 from typing import Dict, List, Pattern, Tuple
@@ -126,6 +127,9 @@ def cli(ctx: click.Context, path: Path, config_regex: Pattern[str]) -> None:
 
             if bad_keys:
                 found_bad_keys = True
+
+            random.seed(0)
+            random.shuffle(all_keys)
 
             for key in all_keys:
                 if key in good_keys:

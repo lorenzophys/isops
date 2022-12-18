@@ -83,7 +83,7 @@ def simple_dir_struct(tmp_path, example_dotspos_yaml):
     def _internal(yaml_to_test, config=example_dotspos_yaml):
         yaml = YAML(typ="safe")
 
-        dotsops = tmp_path / "root/sops.yaml"
+        dotsops = tmp_path / "root/.sops.yaml"
         dotsops.parent.mkdir()
         yaml.dump(config, dotsops)
         secret = tmp_path / "root/secret.yaml"

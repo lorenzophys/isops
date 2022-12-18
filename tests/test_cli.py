@@ -13,7 +13,7 @@ def test_cli_main_safe_file(simple_dir_struct, simple_enc_secret_yaml):
 
     path_to_dotsops, path_to_yaml, root, _ = simple_dir_struct(simple_enc_secret_yaml)
     runner = CliRunner()
-    result = runner.invoke(cli, [root, "--config-regex", "sops.ya?ml"])
+    result = runner.invoke(cli, [root, "--config-regex", ".sops.ya?ml"])
 
     expected_output = (
         f"Found config file: {path_to_dotsops}\n"
@@ -34,7 +34,7 @@ def test_cli_main_unsafe_file(simple_dir_struct, simple_secret_yaml):
 
     dotsops_path, yaml_path, root, _ = simple_dir_struct(simple_secret_yaml)
     runner = CliRunner()
-    result = runner.invoke(cli, [root, "--config-regex", "sops.ya?ml"])
+    result = runner.invoke(cli, [root, "--config-regex", ".sops.ya?ml"])
 
     expected_output = (
         f"Found config file: {dotsops_path}\n"
@@ -55,7 +55,7 @@ def test_cli_main_dotsops_no_creation_rules(
         simple_secret_yaml, config=example_dotspos_yaml_no_creation_rules
     )
     runner = CliRunner()
-    result = runner.invoke(cli, [root, "--config-regex", "sops.ya?ml"])
+    result = runner.invoke(cli, [root, "--config-regex", ".sops.ya?ml"])
 
     expected_output = (
         f"WARNING: skipping '{dotsops_path}'\nNo valid config file found.\n"
@@ -75,20 +75,20 @@ def test_cli_main_no_regex_path_no_enc_regex(
         simple_enc_secret_yaml, config=example_dotspos_yaml_default_regex
     )
     runner = CliRunner()
-    result = runner.invoke(cli, [root, "--config-regex", "sops.ya?ml"])
+    result = runner.invoke(cli, [root, "--config-regex", ".sops.ya?ml"])
 
     expected_output = (
         f"Found config file: {dotsops_path}\n"
         f"{dotsops_path}::pgp [UNSAFE]\n"
-        f"{yaml_path}::password [SAFE]\n"
+        f"{yaml_path}::uid [UNSAFE]\n"
+        f"{yaml_path}::namespace [UNSAFE]\n"
         f"{yaml_path}::username [SAFE]\n"
-        f"{yaml_path}::apiVersion [UNSAFE]\n"
         f"{yaml_path}::kind [UNSAFE]\n"
         f"{yaml_path}::name [UNSAFE]\n"
-        f"{yaml_path}::namespace [UNSAFE]\n"
-        f"{yaml_path}::resourceVersion [UNSAFE]\n"
-        f"{yaml_path}::uid [UNSAFE]\n"
+        f"{yaml_path}::apiVersion [UNSAFE]\n"
+        f"{yaml_path}::password [SAFE]\n"
         f"{yaml_path}::type [UNSAFE]\n"
+        f"{yaml_path}::resourceVersion [UNSAFE]\n"
     )
 
     assert result.exit_code == 1
@@ -113,7 +113,7 @@ def test_cli_main_dotsops_bad_path_regex(
     )
 
     runner = CliRunner()
-    result = runner.invoke(cli, [root, "--config-regex", "sops.ya?ml"])
+    result = runner.invoke(cli, [root, "--config-regex", ".sops.ya?ml"])
 
     expected_output = (
         f"Found config file: {dotsops_path}\n" f"Invalid regex for 'path_regex': [\n"
@@ -133,7 +133,7 @@ def test_cli_main_dotsops_bad_encrypted_regex(
     )
 
     runner = CliRunner()
-    result = runner.invoke(cli, [root, "--config-regex", "sops.ya?ml"])
+    result = runner.invoke(cli, [root, "--config-regex", ".sops.ya?ml"])
 
     expected_output = (
         f"Found config file: {dotsops_path}\n"
@@ -151,9 +151,9 @@ def test_cli_two_config_files(
 
     yaml = YAML(typ="safe")
 
-    dotsops = tmp_path / "root/sops.yaml"
+    dotsops = tmp_path / "root/.sops.yaml"
     dotsops.parent.mkdir()
-    dotsops_2 = tmp_path / "root/sops_2.yaml"
+    dotsops_2 = tmp_path / "root/.sops_2.yaml"
     yaml.dump(example_dotspos_yaml, dotsops)
     yaml.dump(dot_sops_one_rule, dotsops_2)
     secret = tmp_path / "root/secret.yaml"
@@ -161,14 +161,14 @@ def test_cli_two_config_files(
     root = tmp_path / "root"
 
     runner = CliRunner()
-    result = runner.invoke(cli, [str(root), "--config-regex", "sops(.*)?.ya?ml"])
+    result = runner.invoke(cli, [str(root), "--config-regex", ".sops(.*)?.ya?ml"])
 
     expected_output = (
         f"Found config file: {dotsops_2}\n"
         f"Found config file: {dotsops}\n"
+        f"{secret}::resourceVersion [UNSAFE]\n"
         f"{secret}::name [UNSAFE]\n"
         f"{secret}::namespace [UNSAFE]\n"
-        f"{secret}::resourceVersion [UNSAFE]\n"
         f"{secret}::uid [UNSAFE]\n"
         f"{secret}::password [SAFE]\n"
         f"{secret}::username [SAFE]\n"
@@ -183,15 +183,15 @@ def test_cli_secret_not_valid_yaml(tmp_path, example_dotspos_yaml, example_bad_y
 
     yaml = YAML(typ="safe")
 
-    dotsops = tmp_path / "root/sops.yaml"
+    dotsops = tmp_path / "root/.sops.yaml"
     dotsops.parent.mkdir()
     yaml.dump(example_dotspos_yaml, dotsops)
-    secret = tmp_path / "root/secret.yaml"
+    secret = tmp_path / "root/.secret.yaml"
     yaml.dump(example_bad_yaml, secret)
     root = tmp_path / "root"
 
     runner = CliRunner()
-    result = runner.invoke(cli, [str(root), "--config-regex", "sops.ya?ml"])
+    result = runner.invoke(cli, [str(root), "--config-regex", ".sops.ya?ml"])
 
     expected_output = (
         f"Found config file: {dotsops}\n" f"{secret} is not a valid YAML!\n"
