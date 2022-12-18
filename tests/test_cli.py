@@ -80,15 +80,15 @@ def test_cli_main_no_regex_path_no_enc_regex(
     expected_output = (
         f"Found config file: {dotsops_path}\n"
         f"{dotsops_path}::pgp [UNSAFE]\n"
+        f"{yaml_path}::password [SAFE]\n"
+        f"{yaml_path}::username [SAFE]\n"
         f"{yaml_path}::apiVersion [UNSAFE]\n"
         f"{yaml_path}::kind [UNSAFE]\n"
         f"{yaml_path}::name [UNSAFE]\n"
         f"{yaml_path}::namespace [UNSAFE]\n"
-        f"{yaml_path}::password [SAFE]\n"
         f"{yaml_path}::resourceVersion [UNSAFE]\n"
-        f"{yaml_path}::type [UNSAFE]\n"
         f"{yaml_path}::uid [UNSAFE]\n"
-        f"{yaml_path}::username [SAFE]\n"
+        f"{yaml_path}::type [UNSAFE]\n"
     )
 
     assert result.exit_code == 1

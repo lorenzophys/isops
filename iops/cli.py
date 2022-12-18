@@ -82,9 +82,9 @@ def cli(ctx: click.Context, path: Path, config_regex: Pattern[str]) -> None:
     found_bad_keys: bool = False
 
     for rule in creation_rules:
-        if "path_regex" not in rule.keys():
+        if "path_regex" not in rule:
             rule["path_regex"] = DEFAULT_PATH_REGEX
-        if "encrypted_regex" not in rule.keys():
+        if "encrypted_regex" not in rule:
             rule["encrypted_regex"] = DEFAULT_ENCRYPTED_REGEX
 
         try:
@@ -127,7 +127,7 @@ def cli(ctx: click.Context, path: Path, config_regex: Pattern[str]) -> None:
             if bad_keys:
                 found_bad_keys = True
 
-            for key in sorted(all_keys):
+            for key in all_keys:
                 if key in good_keys:
                     click.secho(message=f"{file}::{key} ", bold=False, nl=False)
                     click.secho(message="[SAFE]", bold=False, fg="green")
