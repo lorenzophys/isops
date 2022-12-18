@@ -36,7 +36,7 @@ jobs:
     - name: Lint
       run: |
         poetry run flake8 iops tests
-        poetry run mypy iops
+        poetry run mypy iops --no-incremental
         poetry run pydocstyle iops --add-ignore=D100,D104
     - name: Test
       run: poetry run pytest -vv

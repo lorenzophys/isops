@@ -1,5 +1,5 @@
-import yaml
 from click.testing import CliRunner
+from ruamel.yaml import YAML
 
 from iops.cli import cli
 
@@ -149,13 +149,15 @@ def test_cli_two_config_files(
 ):
     # two config files should merge the creation_rules
 
+    yaml = YAML(typ="safe")
+
     dotsops = tmp_path / "root/.sops.yaml"
     dotsops.parent.mkdir()
     dotsops_2 = tmp_path / "root/.sops_2.yaml"
-    dotsops.write_text(yaml.dump(example_dotspos_yaml))
-    dotsops_2.write_text(yaml.dump(dot_sops_one_rule))
+    yaml.dump(example_dotspos_yaml, dotsops)
+    yaml.dump(dot_sops_one_rule, dotsops_2)
     secret = tmp_path / "root/secret.yaml"
-    secret.write_text(yaml.dump(simple_enc_secret_yaml))
+    yaml.dump(simple_enc_secret_yaml, secret)
     root = tmp_path / "root"
 
     runner = CliRunner()
@@ -179,11 +181,13 @@ def test_cli_two_config_files(
 def test_cli_secret_not_valid_yaml(tmp_path, example_dotspos_yaml, example_bad_yaml):
     # the secret is captured by the creation rules, but it's rubbish
 
+    yaml = YAML(typ="safe")
+
     dotsops = tmp_path / "root/.sops.yaml"
     dotsops.parent.mkdir()
-    dotsops.write_text(yaml.dump(example_dotspos_yaml))
+    yaml.dump(example_dotspos_yaml, dotsops)
     secret = tmp_path / "root/secret.yaml"
-    secret.write_text(yaml.dump(example_bad_yaml))
+    yaml.dump(example_bad_yaml, secret)
     root = tmp_path / "root"
 
     runner = CliRunner()

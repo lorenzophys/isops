@@ -3,7 +3,7 @@ import re
 from pathlib import Path
 from typing import Dict, Generator, Pattern, Tuple
 
-import yaml
+from ruamel.yaml import YAML, YAMLError
 
 
 def load_yaml(path: Path) -> Dict:
@@ -15,11 +15,11 @@ def load_yaml(path: Path) -> Dict:
     Returns:
         Dict: The YAML file in a python dictionary form.
     """
-    with open(path, "r") as stream:
-        try:
-            return yaml.safe_load(stream)
-        except yaml.YAMLError:
-            return {}
+    try:
+        yaml = YAML(typ="safe")
+        return yaml.load(path)
+    except YAMLError:
+        return {}
 
 
 def find_by_key(data: Dict, target: Pattern[str]) -> Generator[Dict, None, None]:
