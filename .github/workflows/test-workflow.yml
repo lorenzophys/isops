@@ -1,0 +1,61 @@
+name: Test workflow
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test:
+
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Cache poetry install
+      uses: actions/cache@v2
+      with:
+        path: ~/.local
+        key: poetry-1.2.2-0
+    - uses: snok/install-poetry@v1
+      with:
+        version: 1.2.2
+        virtualenvs-create: true
+        virtualenvs-in-project: true
+    - name: Install dependencies
+      run: poetry install --no-interaction
+    - name: Lint
+      run: |
+        poetry run flake8 iops tests
+        mypy iops
+        pydocstyle iops --add-ignore=D100,D104
+    - name: Test
+      run: poetry run pytest -vv
+      
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v3
+        with:
+          python-version: '3.11'
+      - uses: snok/install-poetry@v1
+        with:
+          version: 1.2.2
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+      - name: Install dependencies
+        run: poetry install --no-interaction
+      - name: Run tests and collect coverage
+        run: pytest --no-cov-on-fail --cov=./ --cov-report=xml
+      - name: Upload coverage reports to Codecov with GitHub Action
+        uses: codecov/codecov-action@v3
