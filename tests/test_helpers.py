@@ -103,6 +103,10 @@ def test_find_by_key_target_is_in_a_messy_nested_yaml(nested_yaml):
                         "ports": [{"containerPort": 443}],
                     }
                 ],
+                "onemore": [
+                    "hello",
+                    1,
+                ],
             }
         }
     ]

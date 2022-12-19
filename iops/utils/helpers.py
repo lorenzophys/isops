@@ -42,6 +42,8 @@ def find_by_key(data: Dict, target: Pattern[str]) -> Generator[Dict, None, None]
             yield from find_by_key(value, target)
         elif isinstance(value, list):
             for elem in value:
+                if not isinstance(elem, dict):
+                    continue
                 yield from find_by_key(elem, target)
 
 

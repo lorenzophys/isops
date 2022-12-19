@@ -1,5 +1,9 @@
 # IOPS: **I**s **OP**erations **S**ecure
 
+[![codecov](https://codecov.io/gh/lorenzophys/iops/branch/main/graph/badge.svg?token=7RQ5P3X22D)](https://codecov.io/gh/lorenzophys/iops)
+![tests](https://img.shields.io/github/actions/workflow/status/lorenzophys/iops/test-workflow?branch=main&label=tests)
+![pver](https://img.shields.io/pypi/pyversions/iops)
+
 ```ascii
 __/\\\\\\\\\\\________/\\\\\________/\\\\\\\\\\\\\________/\\\\\\\\\\\___        
  _\/////\\\///_______/\\\///\\\_____\/\\\/////////\\\____/\\\/////////\\\_       

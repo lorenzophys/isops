@@ -12,3 +12,6 @@ data:
       image: nginx:stable
       ports:
         - containerPort: 443
+  onemore:
+    - hello
+    - 1
