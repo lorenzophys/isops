@@ -1,4 +1,4 @@
-import random
+import collections
 
 from click.testing import CliRunner
 from ruamel.yaml import YAML
@@ -7,10 +7,10 @@ from iops.cli import cli
 
 
 def assert_consistent_output(expected: str, actual: str) -> bool:
-    random.seed(0)
     new_expected = expected.split("\n")
     new_actual = actual.split("\n")
-    return random.shuffle(new_expected) == random.shuffle(new_actual)
+
+    return collections.Counter(new_expected) == collections.Counter(new_actual)
 
 
 def test_cli_main_safe_file(simple_dir_struct, simple_enc_secret_yaml):
@@ -31,7 +31,6 @@ def test_cli_main_safe_file(simple_dir_struct, simple_enc_secret_yaml):
     )
 
     assert result.exit_code == 0
-    # assert result.output == expected_output
     assert assert_consistent_output(expected_output, result.output)
 
 
@@ -48,12 +47,11 @@ def test_cli_main_unsafe_file(simple_dir_struct, simple_secret_yaml):
 
     expected_output = (
         f"Found config file: {dotsops_path}\n"
-        f"{yaml_path}::password [UNSAFE]\n"
         f"{yaml_path}::username [UNSAFE]\n"
+        f"{yaml_path}::password [UNSAFE]\n"
     )
 
     assert result.exit_code == 1
-    # assert result.output == expected_output
     assert assert_consistent_output(expected_output, result.output)
 
 
@@ -73,7 +71,6 @@ def test_cli_main_dotsops_no_creation_rules(
     )
 
     assert result.exit_code == 1
-    # assert result.output == expected_output
     assert assert_consistent_output(expected_output, result.output)
 
 
@@ -104,7 +101,6 @@ def test_cli_main_no_regex_path_no_enc_regex(
     )
 
     assert result.exit_code == 1
-    # assert result.output == expected_output
     assert assert_consistent_output(expected_output, result.output)
 
 
@@ -133,7 +129,6 @@ def test_cli_main_dotsops_bad_path_regex(
     )
 
     assert result.exit_code == 1
-    # assert result.output == expected_output
     assert assert_consistent_output(expected_output, result.output)
 
 
@@ -155,7 +150,6 @@ def test_cli_main_dotsops_bad_encrypted_regex(
     )
 
     assert result.exit_code == 1
-    # assert result.output == expected_output
     assert assert_consistent_output(expected_output, result.output)
 
 
@@ -190,7 +184,6 @@ def test_cli_two_config_files(
     )
 
     assert result.exit_code == 1
-    # assert result.output == expected_output
     assert assert_consistent_output(expected_output, result.output)
 
 
@@ -214,5 +207,4 @@ def test_cli_secret_not_valid_yaml(tmp_path, example_dotspos_yaml, example_bad_y
     )
 
     assert result.exit_code == 1
-    # assert result.output == expected_output
     assert assert_consistent_output(expected_output, result.output)
