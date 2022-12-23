@@ -1,7 +1,7 @@
 import pytest
 from ruamel.yaml import YAML
 
-from iops.utils import all_dict_values, find_by_key, load_all_yaml
+from isops.utils import all_dict_values, find_by_key, load_all_yaml
 
 
 def test_is_yaml_loaded_correctly(example_good_deploy_yaml):

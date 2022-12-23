@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 from ruamel.yaml import YAML
 
-from iops.utils import load_all_yaml, load_yaml
+from isops.utils import load_all_yaml, load_yaml
 
 TESTS_PATH = os.path.dirname(os.path.realpath(__file__))
 SAMPLES_PATH = os.path.join(TESTS_PATH, "samples")

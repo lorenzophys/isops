@@ -4,8 +4,8 @@ from typing import Dict, List, Pattern, Tuple
 
 import click
 
-from iops import __version__
-from iops.utils import (
+from isops import __version__
+from isops.utils import (
     all_dict_values,
     find_all_files_by_regex,
     find_by_key,

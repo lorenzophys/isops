@@ -1,11 +1,11 @@
-from iops.utils.helpers import (
+from isops.utils.helpers import (
     all_dict_values,
     find_all_files_by_regex,
     find_by_key,
     load_all_yaml,
     load_yaml,
 )
-from iops.utils.sops import verify_encryption_regex
+from isops.utils.sops import verify_encryption_regex
 
 __all__ = [
     "load_yaml",

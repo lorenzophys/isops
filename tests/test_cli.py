@@ -3,7 +3,7 @@ import collections
 from click.testing import CliRunner
 from ruamel.yaml import YAML
 
-from iops.cli import cli
+from isops.cli import cli
 
 
 def assert_consistent_output(expected: str, actual: str) -> bool:
