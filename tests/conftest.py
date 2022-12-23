@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 from ruamel.yaml import YAML
 
-from iops.utils import load_yaml
+from iops.utils import load_all_yaml, load_yaml
 
 TESTS_PATH = os.path.dirname(os.path.realpath(__file__))
 SAMPLES_PATH = os.path.join(TESTS_PATH, "samples")
@@ -20,6 +20,12 @@ def example_good_deploy_yaml():
 def example_bad_yaml():
     path = Path(os.path.join(SAMPLES_PATH, "bad_yaml.yaml"))
     return load_yaml(path)
+
+
+@pytest.fixture(scope="module")
+def example_bad_yaml_load_all():
+    path = Path(os.path.join(SAMPLES_PATH, "bad_yaml.yaml"))
+    return load_all_yaml(path)
 
 
 @pytest.fixture(scope="module")
@@ -74,6 +80,12 @@ def dot_sops_bad_encrypted_regex():
 def dot_sops_one_rule():
     path = Path(os.path.join(SAMPLES_PATH, ".sops_one_rule.yaml"))
     return load_yaml(path)
+
+
+@pytest.fixture(scope="module")
+def yaml_blocks():
+    path = Path(os.path.join(SAMPLES_PATH, "yaml_blocks.yaml"))
+    return load_all_yaml(path)
 
 
 @pytest.fixture(scope="function")

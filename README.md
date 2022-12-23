@@ -16,9 +16,7 @@ __/\\\\\\\\\\\________/\\\\\________/\\\\\\\\\\\\\________/\\\\\\\\\\\___
         _\///////////________\/////________\///_________________\///////////_____
 ```
 
-IOPS (**I**s **OP**erations **S**ecure) is a minimal command line utility to help you ensure that your secrets are encrypted correctly with [sops](https://github.com/mozilla/sops) before committing them.
-
-`iops` can read the sops config file, scan the relevant yaml files and tell you precisely the status of each key in each file.
+IOPS (**I**s **OP**erations **S**ecure) is a minimal command line utility that helps you ensure that your secrets are encrypted correctly with [sops](https://github.com/mozilla/sops) before committing them. `iops` will read your configuration files, will scan all your secrets and alerts you if it finds any key that should be encrypted but it's not.
 
 ## CLI
 
@@ -37,7 +35,7 @@ Options:
 
 You must provide a directory to scan and a regex that matches all the sops configuration files.
 
-## How does it work?
+## How it works?
 
 `iops` is called with a directory and a regex. Then:
 

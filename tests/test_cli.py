@@ -7,6 +7,10 @@ from iops.cli import cli
 
 
 def assert_consistent_output(expected: str, actual: str) -> bool:
+    # This is useful to avoid worrying about the ordering of the
+    # printed output. It compares the content of the expected output
+    # without taking into account the order in which it is printed.
+
     new_expected = expected.split("\n")
     new_actual = actual.split("\n")
 
@@ -195,7 +199,7 @@ def test_cli_secret_not_valid_yaml(tmp_path, example_dotspos_yaml, example_bad_y
     dotsops = tmp_path / "root/.sops.yaml"
     dotsops.parent.mkdir()
     yaml.dump(example_dotspos_yaml, dotsops)
-    secret = tmp_path / "root/.secret.yaml"
+    secret = tmp_path / "root/secret.yaml"
     yaml.dump(example_bad_yaml, secret)
     root = tmp_path / "root"
 
@@ -204,6 +208,33 @@ def test_cli_secret_not_valid_yaml(tmp_path, example_dotspos_yaml, example_bad_y
 
     expected_output = (
         f"Found config file: {dotsops}\n" f"{secret} is not a valid YAML!\n"
+    )
+
+    assert result.exit_code == 1
+    assert assert_consistent_output(expected_output, result.output)
+
+
+def test_cli_secret_is_a_block_of_yaml(tmp_path, example_dotspos_yaml, yaml_blocks):
+    # the secret is a block of yaml
+
+    yaml = YAML(typ="safe")
+
+    dotsops = tmp_path / "root/.sops.yaml"
+    dotsops.parent.mkdir()
+    yaml.dump(example_dotspos_yaml, dotsops)
+    secret = tmp_path / "root/secret.yaml"
+    yaml.dump_all(yaml_blocks, secret)
+    root = tmp_path / "root"
+    print(yaml_blocks)
+    runner = CliRunner()
+    result = runner.invoke(cli, [str(root), "--config-regex", ".sops.ya?ml"])
+
+    expected_output = (
+        f"Found config file: {dotsops}\n"
+        f"{secret}::password [UNSAFE]\n"
+        f"{secret}::username [UNSAFE]\n"
+        f"{secret}::password [UNSAFE]\n"
+        f"{secret}::username [UNSAFE]\n"
     )
 
     assert result.exit_code == 1
