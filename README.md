@@ -3,6 +3,7 @@
 [![codecov](https://codecov.io/gh/lorenzophys/iops/branch/main/graph/badge.svg?token=7RQ5P3X22D)](https://codecov.io/gh/lorenzophys/iops)
 ![tests](https://img.shields.io/github/actions/workflow/status/lorenzophys/iops/test-workflow?branch=main&label=tests)
 ![pver](https://img.shields.io/pypi/pyversions/iops)
+![MIT](https://img.shields.io/github/license/lorenzophys/iops)
 
 ```ascii
 __/\\\\\\\\\\\________/\\\\\________/\\\\\\\\\\\\\________/\\\\\\\\\\\___        
