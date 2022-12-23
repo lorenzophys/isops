@@ -1,9 +1,12 @@
 [tool.poetry]
 name = "iops"
 version = "0.1.0"
-description = ""
+description = "Utility to ensure SOPS secrets are encrypterd."
 authors = ["Lorenzo Maffioli <lorenzo.maffioli@gmail.com>"]
 readme = "README.md"
+
+repository = "https://github.com/lorenzophys/iops"
+keywords = ["iops", "sops", "secrets"]
 
 [tool.poetry.scripts]
 iops = "iops.cli:cli"
