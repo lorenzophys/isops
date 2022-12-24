@@ -20,7 +20,15 @@ __/\\\\\\\\\\\____________________/\\\\\_______/\\\\\\\\\\\\\_______/\\\\\\\\\\\
 
 IsOPS (**Is** **OP**erations **S**ecure) is a minimal command line utility that helps you ensure that your secrets are encrypted correctly with [sops](https://github.com/mozilla/sops) before committing them. `isops` will read your configuration files, will scan all your secrets and alerts you if it finds any key that should be encrypted but it's not.
 
-## CLI
+## Installation
+
+You can install `isops` via `pip`:
+
+```console
+user@laptop:~$ pip install isops
+```
+
+The CLI is minimal:
 
 ```console
 user@laptop:~$ isops
