@@ -1,5 +1,6 @@
 # IsOPS: **Is** **OP**erations **S**ecure
 
+![release](https://img.shields.io/github/v/release/lorenzophys/isops)
 [![codecov](https://codecov.io/gh/lorenzophys/isops/branch/main/graph/badge.svg?token=7RQ5P3X22D)](https://codecov.io/gh/lorenzophys/isops)
 ![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/lorenzophys/isops/test-workflow.yml?branch=main&label=tests)
 ![pver](https://img.shields.io/pypi/pyversions/isops)
