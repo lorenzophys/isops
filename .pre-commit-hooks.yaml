@@ -1,6 +1,6 @@
 - id: isops
   name: isops
   description: Don't commit SOPS secrets!
-  entry: isops
+  entry: isops .
   language: python
   pass_filenames: false
