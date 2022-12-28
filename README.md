@@ -167,7 +167,7 @@ The previous example can be found in the `example` directory. The sample applica
 ```yaml
 repos:
   - repo: https://github.com/lorenzophys/isops
-    rev: v0.1.0
+    rev: v0.1.1
     hooks:
       - id: isops
         args:
