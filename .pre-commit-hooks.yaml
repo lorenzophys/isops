@@ -3,4 +3,4 @@
   description: Don't commit SOPS secrets!
   entry: isops
   language: python
-  types: []
+  pass_filenames: false
