@@ -1,4 +1,4 @@
-from iops.utils import verify_encryption_regex
+from isops.utils import verify_encryption_regex
 
 
 def test_verify_encryption_regex(simple_enc_secret_yaml):

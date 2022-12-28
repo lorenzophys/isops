@@ -4,12 +4,12 @@ from typing import Dict, List, Pattern, Tuple
 
 import click
 
-from iops import __version__
-from iops.utils import (
+from isops import __version__
+from isops.utils import (
     all_dict_values,
     find_all_files_by_regex,
     find_by_key,
-    load_yaml,
+    load_all_yaml,
     verify_encryption_regex,
 )
 
@@ -61,13 +61,13 @@ def cli(ctx: click.Context, path: Path, config_regex: Pattern[str]) -> None:
 
     creation_rules = []
     for match_path in find_all_files_by_regex(config_regex, received_path):
-        config = load_yaml(match_path)
-        try:
-            creation_rules += config["creation_rules"]
-            click.secho(message=f"Found config file: {match_path}", bold=True)
-        except KeyError:
-            click.secho(message=f"WARNING: skipping '{match_path}'", fg="yellow")
-            continue
+        for config in load_all_yaml(Path(match_path)):
+            try:
+                creation_rules += config["creation_rules"]
+                click.secho(message=f"Found config file: {match_path}", bold=True)
+            except KeyError:
+                click.secho(message=f"WARNING: skipping '{match_path}'", fg="yellow")
+                continue
 
     if not creation_rules:
         click.secho(
@@ -82,9 +82,9 @@ def cli(ctx: click.Context, path: Path, config_regex: Pattern[str]) -> None:
     found_bad_keys: bool = False
 
     for rule in creation_rules:
-        if "path_regex" not in rule.keys():
+        if "path_regex" not in rule:
             rule["path_regex"] = DEFAULT_PATH_REGEX
-        if "encrypted_regex" not in rule.keys():
+        if "encrypted_regex" not in rule:
             rule["encrypted_regex"] = DEFAULT_ENCRYPTED_REGEX
 
         try:
@@ -110,30 +110,31 @@ def cli(ctx: click.Context, path: Path, config_regex: Pattern[str]) -> None:
             ctx.exit(1)
 
         for file in find_all_files_by_regex(path_regex, received_path):
-            secret = load_yaml(file)
+            for secret in load_all_yaml(file):
+                if secret == {}:
+                    click.secho(
+                        message=f"{file} is not a valid YAML!", bold=True, fg="red"
+                    )
+                    ctx.exit(1)
 
-            if secret == {}:
-                click.secho(message=f"{file} is not a valid YAML!", bold=True, fg="red")
-                ctx.exit(1)
+                if "sops" in secret:
+                    secret.pop("sops", None)
 
-            if "sops" in secret:
-                secret.pop("sops", None)
+                good_keys, bad_keys = _categorize_keys_based_on_their_values(
+                    secret, encrypted_regex
+                )
+                all_keys: List[str] = good_keys + bad_keys
 
-            good_keys, bad_keys = _categorize_keys_based_on_their_values(
-                secret, encrypted_regex
-            )
-            all_keys: List[str] = good_keys + bad_keys
+                if bad_keys:
+                    found_bad_keys = True
 
-            if bad_keys:
-                found_bad_keys = True
-
-            for key in sorted(all_keys):
-                if key in good_keys:
-                    click.secho(message=f"{file}::{key} ", bold=False, nl=False)
-                    click.secho(message="[SAFE]", bold=False, fg="green")
-                else:
-                    click.secho(message=f"{file}::{key} ", bold=False, nl=False)
-                    click.secho(message="[UNSAFE]", bold=False, fg="red")
+                for key in all_keys:
+                    if key in good_keys:
+                        click.secho(message=f"{file}::{key} ", bold=False, nl=False)
+                        click.secho(message="[SAFE]", bold=False, fg="green")
+                    else:
+                        click.secho(message=f"{file}::{key} ", bold=False, nl=False)
+                        click.secho(message="[UNSAFE]", bold=False, fg="red")
 
     if found_bad_keys:
         ctx.exit(1)

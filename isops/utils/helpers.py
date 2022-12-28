@@ -1,9 +1,11 @@
 import os
 import re
 from pathlib import Path
-from typing import Dict, Generator, Pattern, Tuple
+from typing import Dict, Generator, List, Pattern, Tuple
 
-import yaml
+from ruamel.yaml import YAML, YAMLError
+from ruamel.yaml.parser import ParserError
+from ruamel.yaml.scanner import ScannerError
 
 
 def load_yaml(path: Path) -> Dict:
@@ -15,11 +17,29 @@ def load_yaml(path: Path) -> Dict:
     Returns:
         Dict: The YAML file in a python dictionary form.
     """
-    with open(path, "r") as stream:
-        try:
-            return yaml.safe_load(stream)
-        except yaml.YAMLError:
-            return {}
+    try:
+        yaml = YAML(typ="safe")
+        return yaml.load(path)
+    except YAMLError:
+        return {}
+
+
+def load_all_yaml(path: Path) -> List[Dict]:
+    """Like load_yaml, but loads yaml blocks.
+
+    Args:
+        path (Path): The path of the YAML file.
+
+    Returns:
+        List: A list of dictionaries corresponding to
+            the different yaml blocks.
+
+    """
+    try:
+        yaml = YAML(typ="safe")
+        return list(yaml.load_all(path))
+    except (ParserError, ScannerError):
+        return []
 
 
 def find_by_key(data: Dict, target: Pattern[str]) -> Generator[Dict, None, None]:
@@ -42,6 +62,8 @@ def find_by_key(data: Dict, target: Pattern[str]) -> Generator[Dict, None, None]
             yield from find_by_key(value, target)
         elif isinstance(value, list):
             for elem in value:
+                if not isinstance(elem, dict):
+                    continue
                 yield from find_by_key(elem, target)
 
 

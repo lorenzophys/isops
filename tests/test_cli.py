@@ -1,7 +1,20 @@
-import yaml
-from click.testing import CliRunner
+import collections
 
-from iops.cli import cli
+from click.testing import CliRunner
+from ruamel.yaml import YAML
+
+from isops.cli import cli
+
+
+def assert_consistent_output(expected: str, actual: str) -> bool:
+    # This is useful to avoid worrying about the ordering of the
+    # printed output. It compares the content of the expected output
+    # without taking into account the order in which it is printed.
+
+    new_expected = expected.split("\n")
+    new_actual = actual.split("\n")
+
+    return collections.Counter(new_expected) == collections.Counter(new_actual)
 
 
 def test_cli_main_safe_file(simple_dir_struct, simple_enc_secret_yaml):
@@ -22,7 +35,7 @@ def test_cli_main_safe_file(simple_dir_struct, simple_enc_secret_yaml):
     )
 
     assert result.exit_code == 0
-    assert result.output == expected_output
+    assert assert_consistent_output(expected_output, result.output)
 
 
 def test_cli_main_unsafe_file(simple_dir_struct, simple_secret_yaml):
@@ -38,12 +51,12 @@ def test_cli_main_unsafe_file(simple_dir_struct, simple_secret_yaml):
 
     expected_output = (
         f"Found config file: {dotsops_path}\n"
-        f"{yaml_path}::password [UNSAFE]\n"
         f"{yaml_path}::username [UNSAFE]\n"
+        f"{yaml_path}::password [UNSAFE]\n"
     )
 
     assert result.exit_code == 1
-    assert result.output == expected_output
+    assert assert_consistent_output(expected_output, result.output)
 
 
 def test_cli_main_dotsops_no_creation_rules(
@@ -62,7 +75,7 @@ def test_cli_main_dotsops_no_creation_rules(
     )
 
     assert result.exit_code == 1
-    assert result.output == expected_output
+    assert assert_consistent_output(expected_output, result.output)
 
 
 def test_cli_main_no_regex_path_no_enc_regex(
@@ -80,19 +93,19 @@ def test_cli_main_no_regex_path_no_enc_regex(
     expected_output = (
         f"Found config file: {dotsops_path}\n"
         f"{dotsops_path}::pgp [UNSAFE]\n"
-        f"{yaml_path}::apiVersion [UNSAFE]\n"
+        f"{yaml_path}::uid [UNSAFE]\n"
+        f"{yaml_path}::namespace [UNSAFE]\n"
+        f"{yaml_path}::username [SAFE]\n"
         f"{yaml_path}::kind [UNSAFE]\n"
         f"{yaml_path}::name [UNSAFE]\n"
-        f"{yaml_path}::namespace [UNSAFE]\n"
+        f"{yaml_path}::apiVersion [UNSAFE]\n"
         f"{yaml_path}::password [SAFE]\n"
-        f"{yaml_path}::resourceVersion [UNSAFE]\n"
         f"{yaml_path}::type [UNSAFE]\n"
-        f"{yaml_path}::uid [UNSAFE]\n"
-        f"{yaml_path}::username [SAFE]\n"
+        f"{yaml_path}::resourceVersion [UNSAFE]\n"
     )
 
     assert result.exit_code == 1
-    assert result.output == expected_output
+    assert assert_consistent_output(expected_output, result.output)
 
 
 def test_cli_invalid_regex_in_config_regex_option():
@@ -120,7 +133,7 @@ def test_cli_main_dotsops_bad_path_regex(
     )
 
     assert result.exit_code == 1
-    assert result.output == expected_output
+    assert assert_consistent_output(expected_output, result.output)
 
 
 def test_cli_main_dotsops_bad_encrypted_regex(
@@ -141,7 +154,7 @@ def test_cli_main_dotsops_bad_encrypted_regex(
     )
 
     assert result.exit_code == 1
-    assert result.output == expected_output
+    assert assert_consistent_output(expected_output, result.output)
 
 
 def test_cli_two_config_files(
@@ -149,13 +162,15 @@ def test_cli_two_config_files(
 ):
     # two config files should merge the creation_rules
 
+    yaml = YAML(typ="safe")
+
     dotsops = tmp_path / "root/.sops.yaml"
     dotsops.parent.mkdir()
     dotsops_2 = tmp_path / "root/.sops_2.yaml"
-    dotsops.write_text(yaml.dump(example_dotspos_yaml))
-    dotsops_2.write_text(yaml.dump(dot_sops_one_rule))
+    yaml.dump(example_dotspos_yaml, dotsops)
+    yaml.dump(dot_sops_one_rule, dotsops_2)
     secret = tmp_path / "root/secret.yaml"
-    secret.write_text(yaml.dump(simple_enc_secret_yaml))
+    yaml.dump(simple_enc_secret_yaml, secret)
     root = tmp_path / "root"
 
     runner = CliRunner()
@@ -164,26 +179,28 @@ def test_cli_two_config_files(
     expected_output = (
         f"Found config file: {dotsops_2}\n"
         f"Found config file: {dotsops}\n"
+        f"{secret}::resourceVersion [UNSAFE]\n"
         f"{secret}::name [UNSAFE]\n"
         f"{secret}::namespace [UNSAFE]\n"
-        f"{secret}::resourceVersion [UNSAFE]\n"
         f"{secret}::uid [UNSAFE]\n"
         f"{secret}::password [SAFE]\n"
         f"{secret}::username [SAFE]\n"
     )
 
     assert result.exit_code == 1
-    assert result.output == expected_output
+    assert assert_consistent_output(expected_output, result.output)
 
 
 def test_cli_secret_not_valid_yaml(tmp_path, example_dotspos_yaml, example_bad_yaml):
     # the secret is captured by the creation rules, but it's rubbish
 
+    yaml = YAML(typ="safe")
+
     dotsops = tmp_path / "root/.sops.yaml"
     dotsops.parent.mkdir()
-    dotsops.write_text(yaml.dump(example_dotspos_yaml))
+    yaml.dump(example_dotspos_yaml, dotsops)
     secret = tmp_path / "root/secret.yaml"
-    secret.write_text(yaml.dump(example_bad_yaml))
+    yaml.dump(example_bad_yaml, secret)
     root = tmp_path / "root"
 
     runner = CliRunner()
@@ -194,4 +211,31 @@ def test_cli_secret_not_valid_yaml(tmp_path, example_dotspos_yaml, example_bad_y
     )
 
     assert result.exit_code == 1
-    assert result.output == expected_output
+    assert assert_consistent_output(expected_output, result.output)
+
+
+def test_cli_secret_is_a_block_of_yaml(tmp_path, example_dotspos_yaml, yaml_blocks):
+    # the secret is a block of yaml
+
+    yaml = YAML(typ="safe")
+
+    dotsops = tmp_path / "root/.sops.yaml"
+    dotsops.parent.mkdir()
+    yaml.dump(example_dotspos_yaml, dotsops)
+    secret = tmp_path / "root/secret.yaml"
+    yaml.dump_all(yaml_blocks, secret)
+    root = tmp_path / "root"
+    print(yaml_blocks)
+    runner = CliRunner()
+    result = runner.invoke(cli, [str(root), "--config-regex", ".sops.ya?ml"])
+
+    expected_output = (
+        f"Found config file: {dotsops}\n"
+        f"{secret}::password [UNSAFE]\n"
+        f"{secret}::username [UNSAFE]\n"
+        f"{secret}::password [UNSAFE]\n"
+        f"{secret}::username [UNSAFE]\n"
+    )
+
+    assert result.exit_code == 1
+    assert assert_consistent_output(expected_output, result.output)

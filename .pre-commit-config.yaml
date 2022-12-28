@@ -13,7 +13,7 @@ repos:
     rev: 6.1.1
     hooks:
       - id: pydocstyle
-        files: ^iops
+        files: ^isops
         additional_dependencies:
           - toml
         args:

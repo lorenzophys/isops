@@ -1,4 +1,4 @@
-MAIN_PATH=iops
+MAIN_PATH=isops
 TESTS_PATH=tests
 PYDOCSTYLE_IGNORE=D100,D104
 
@@ -19,7 +19,7 @@ format:
 .PHONY: lint
 lint:
 	flake8 ${MAIN_PATH} ${TESTS_PATH}
-	mypy ${MAIN_PATH}
+	mypy --no-incremental ${MAIN_PATH} # https://github.com/python/mypy/issues/7276
 	pydocstyle ${MAIN_PATH} --add-ignore=${PYDOCSTYLE_IGNORE}
 
 .PHONY: test

@@ -1,26 +1,39 @@
-# IOPS: **I**s **OP**erations **S**ecure
+# IsOPS: **Is** **OP**erations **S**ecure
+
+![release](https://img.shields.io/github/v/release/lorenzophys/isops)
+[![codecov](https://codecov.io/gh/lorenzophys/isops/branch/main/graph/badge.svg?token=7RQ5P3X22D)](https://codecov.io/gh/lorenzophys/isops)
+![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/lorenzophys/isops/test-workflow.yml?branch=main&label=tests)
+![pver](https://img.shields.io/pypi/pyversions/isops)
+![MIT](https://img.shields.io/github/license/lorenzophys/isops)
 
 ```ascii
-__/\\\\\\\\\\\________/\\\\\________/\\\\\\\\\\\\\________/\\\\\\\\\\\___        
- _\/////\\\///_______/\\\///\\\_____\/\\\/////////\\\____/\\\/////////\\\_       
-  _____\/\\\________/\\\/__\///\\\___\/\\\_______\/\\\___\//\\\______\///__      
-   _____\/\\\_______/\\\______\//\\\__\/\\\\\\\\\\\\\/_____\////\\\_________     
-    _____\/\\\______\/\\\_______\/\\\__\/\\\/////////__________\////\\\______    
-     _____\/\\\______\//\\\______/\\\___\/\\\______________________\////\\\___   
-      _____\/\\\_______\///\\\__/\\\_____\/\\\_______________/\\\______\//\\\__  
-       __/\\\\\\\\\\\_____\///\\\\\/______\/\\\______________\///\\\\\\\\\\\/___ 
-        _\///////////________\/////________\///_________________\///////////_____
+__/\\\\\\\\\\\____________________/\\\\\_______/\\\\\\\\\\\\\_______/\\\\\\\\\\\___        
+ _\/////\\\///___________________/\\\///\\\____\/\\\/////////\\\___/\\\/////////\\\_       
+  _____\/\\\____________________/\\\/__\///\\\__\/\\\_______\/\\\__\//\\\______\///__      
+   _____\/\\\______/\\\\\\\\\\__/\\\______\//\\\_\/\\\\\\\\\\\\\/____\////\\\_________     
+    _____\/\\\_____\/\\\//////__\/\\\_______\/\\\_\/\\\/////////_________\////\\\______    
+     _____\/\\\_____\/\\\\\\\\\\_\//\\\______/\\\__\/\\\_____________________\////\\\___   
+      _____\/\\\_____\////////\\\__\///\\\__/\\\____\/\\\______________/\\\______\//\\\__  
+       __/\\\\\\\\\\\__/\\\\\\\\\\____\///\\\\\/_____\/\\\_____________\///\\\\\\\\\\\/___ 
+        _\///////////__\//////////_______\/////_______\///________________\///////////_____
+
 ```
 
-IOPS (**I**s **OP**erations **S**ecure) is a minimal command line utility to help you ensure that your secrets are encrypted correctly with [sops](https://github.com/mozilla/sops) before committing them.
+IsOPS (**Is** **OP**erations **S**ecure) is a minimal command line utility that helps you ensure that your secrets are encrypted correctly with [sops](https://github.com/mozilla/sops) before committing them. `isops` will read your configuration files, will scan all your secrets and alerts you if it finds any key that should be encrypted but it's not.
 
-`iops` can read the sops config file, scan the relevant yaml files and tell you precisely the status of each key in each file.
+## Installation
 
-## CLI
+You can install `isops` via `pip`:
 
 ```console
-user@laptop:~$ iops
-Usage: iops [OPTIONS] PATH
+user@laptop:~$ pip install isops
+```
+
+The CLI is minimal:
+
+```console
+user@laptop:~$ isops
+Usage: isops [OPTIONS] PATH
 
   Top level command.
 
@@ -33,13 +46,13 @@ Options:
 
 You must provide a directory to scan and a regex that matches all the sops configuration files.
 
-## How does it work?
+## How it works?
 
-`iops` is called with a directory and a regex. Then:
+`isops` is called with a directory and a regex. Then:
 
 1. It finds the config files using the provided regex.
 2. For each rule in `creation_rules` it finds the files according to the `path_regex`.
-3. For each file found, `iops` scans all the keys, no matter how nested the yaml is, in search for those keys that match the `encrypted_regex`.
+3. For each file found, `isops` scans all the keys, no matter how nested the yaml is, in search for those keys that match the `encrypted_regex`.
 4. For each matched key, it checks if the associated value matches the sops regex `"^ENC\[AES256_GCM,data:(.+),iv:(.+),tag:(.+),type:(.+)\]"`.
 
 If the config file doesn't provide a `path_regex` or a `encrypted_regex`, the default values are, respectively, `"\.ya?ml$"` and `""`.
@@ -75,10 +88,10 @@ metadata:
 type: Opaque
 ```
 
-If you run `iops` you get a warning because your secret is not encrypted:
+If you run `isops` you get a warning because your secret is not encrypted:
 
 ```console
-user@laptop:~$ iops ./example --config-regex .sops.yaml
+user@laptop:~$ isops ./example --config-regex .sops.yaml
 Found config file: example/.sops.yaml
 example/secret.yaml::key [UNSAFE]
 user@laptop:~$ echo $?
@@ -100,10 +113,10 @@ sops:
 
 ```
 
-then `iops` will give you the green light:
+then `isops` will give you the green light:
 
 ```console
-user@laptop:~$ iops ./example --config-regex .sops.yaml
+user@laptop:~$ isops ./example --config-regex .sops.yaml
 Found config file: example/.sops.yaml
 example/secret.yaml::key [SAFE]
 user@laptop:~$ echo $?
@@ -133,10 +146,10 @@ example
     └── service.yaml
 ```
 
-Then if you run `iops` you get:
+Then if you run `isops` you get:
 
 ```console
-user@laptop:~$ iops example --config-regex "example/.sops/(.*).yaml$"
+user@laptop:~$ isops example --config-regex "example/.sops/(.*).yaml$"
 Found config file: example/.sops/sops-dev.yaml
 Found config file: example/.sops/sops-prod.yaml
 example/dev/db-password-secret.yaml::password [SAFE]

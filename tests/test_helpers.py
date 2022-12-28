@@ -1,6 +1,7 @@
 import pytest
+from ruamel.yaml import YAML
 
-from iops.utils import all_dict_values, find_by_key
+from isops.utils import all_dict_values, find_by_key, load_all_yaml
 
 
 def test_is_yaml_loaded_correctly(example_good_deploy_yaml):
@@ -31,6 +32,18 @@ def test_is_yaml_loaded_correctly(example_good_deploy_yaml):
 
 def test_bad_yaml_handled_correctly(example_bad_yaml):
     assert example_bad_yaml == {}
+
+
+def test_bad_yaml_handled_correctly_load_all_yaml(tmp_path, example_bad_yaml_load_all):
+    yaml = YAML(typ="safe")
+
+    test_file = tmp_path / "root/test.yaml"
+    test_file.parent.mkdir()
+
+    yaml.dump(example_bad_yaml_load_all, test_file)
+
+    yaml_file = load_all_yaml(test_file)
+    assert yaml_file == [[]]
 
 
 def test_find_by_key_one_target(simple_secret_yaml):
@@ -102,6 +115,10 @@ def test_find_by_key_target_is_in_a_messy_nested_yaml(nested_yaml):
                         "image": "nginx:stable",
                         "ports": [{"containerPort": 443}],
                     }
+                ],
+                "onemore": [
+                    "hello",
+                    1,
                 ],
             }
         }
