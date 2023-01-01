@@ -66,7 +66,7 @@ def _validate_regex(ctx: click.Context, param: click.Parameter, value: str) -> s
 def cli(
     ctx: click.Context, path: Path, config_regex: Pattern[str], summary: bool
 ) -> None:
-    """Utility to ensure SOPS secrets are encrypterd."""
+    """Ensure your SOPS secrets are encrypterd."""
     ctx.ensure_object(dict)
 
     received_path = Path(path)
