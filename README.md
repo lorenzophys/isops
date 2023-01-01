@@ -35,7 +35,7 @@ The CLI is minimal:
 user@laptop:~$ isops
 Usage: isops [OPTIONS] PATH
 
-  Utility to ensure SOPS secrets are encrypterd.
+  Utility to ensure all SOPS secrets are encrypterd.
 
 Options:
   -s, --summary            Print a summary at the end of the checks.
@@ -53,10 +53,10 @@ You must provide a directory to scan and a regex that matches all the sops confi
 
 1. It finds the config files using the provided regex.
 2. For each rule in `creation_rules` it finds the files according to the `path_regex`.
-3. For each file found, `isops` scans all the keys, no matter how nested the yaml is, in search for those keys that match the `encrypted_regex`.
+3. For each file found, it scans all the keys, no matter how nested the yaml is, in search for those keys that match the `encrypted_regex`.
 4. For each matched key, it checks if the associated value matches the sops regex `"^ENC\[AES256_GCM,data:(.+),iv:(.+),tag:(.+),type:(.+)\]"`.
 
-If the config file doesn't provide a `path_regex` or a `encrypted_regex`, the default values are, respectively, `"\.ya?ml$"` and `""`.
+If the config file doesn't provide a `path_regex` or a `encrypted_regex`, the default values are, respectively, `".ya?ml$"` and `""`.
 
 ## Usage example
 
@@ -159,7 +159,7 @@ example/prod/db-password-secret.yaml::password [SAFE]
 example/prod/api-key-secret.yaml::key [UNSAFE]
 ```
 
-Sometimes the list of secret is very long: you can enable a small summary at the end with th `--summary` option:
+Sometimes the list of secret is very long: you can enable a small summary at the end with the `--summary` option:
 
 ```console
 user@laptop:~$ isops example --config-regex "example/.sops/(.*).yaml$" --summary

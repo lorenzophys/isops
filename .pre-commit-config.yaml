@@ -1,11 +1,11 @@
 repos:
   - repo: https://github.com/pycqa/isort
-    rev: 5.10.1
+    rev: 5.11.4
     hooks:
       - id: isort
 
   - repo: https://github.com/psf/black
-    rev: 22.10.0
+    rev: 22.12.0
     hooks:
       - id: black
 
@@ -20,7 +20,7 @@ repos:
           - --add-ignore=D100,D104
 
   - repo: https://github.com/pycqa/flake8
-    rev: 5.0.4
+    rev: 6.0.0
     hooks:
       - id: flake8
         args:
@@ -33,7 +33,7 @@ repos:
           - flake8-simplify
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v0.990
+    rev: v0.991
     hooks:
       - id: mypy
         additional_dependencies:
