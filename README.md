@@ -188,8 +188,8 @@ repos:
     hooks:
       - id: isops
         args:
-        - --config-regex=.sops/(.*).yaml$
-        - --summary
+          - --config-regex=.sops/(.*).ya?ml$
+          - --summary
 ```
 
 ## License
