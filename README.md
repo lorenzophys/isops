@@ -94,6 +94,7 @@ If you run `isops` you get a warning because your secret is not encrypted:
 ```console
 user@laptop:~$ isops ./example --config-regex .sops.yaml
 Found config file: example/.sops.yaml
+---
 example/secret.yaml::key [UNSAFE]
 user@laptop:~$ echo $?
 1
@@ -119,6 +120,7 @@ then `isops` will give you the green light:
 ```console
 user@laptop:~$ isops ./example --config-regex .sops.yaml
 Found config file: example/.sops.yaml
+---
 example/secret.yaml::key [SAFE]
 user@laptop:~$ echo $?
 0
@@ -153,6 +155,7 @@ Then if you run `isops` you get:
 user@laptop:~$ isops example --config-regex "example/.sops/(.*).yaml$"
 Found config file: example/.sops/sops-dev.yaml
 Found config file: example/.sops/sops-prod.yaml
+---
 example/dev/db-password-secret.yaml::password [SAFE]
 example/dev/api-key-secret.yaml::key [SAFE]
 example/prod/db-password-secret.yaml::password [SAFE]
@@ -165,6 +168,7 @@ Sometimes the list of secret is very long: you can enable a small summary at the
 user@laptop:~$ isops example --config-regex "example/.sops/(.*).yaml$" --summary
 Found config file: example/.sops/sops-dev.yaml
 Found config file: example/.sops/sops-prod.yaml
+---
 example/dev/db-password-secret.yaml::password [SAFE]
 example/dev/api-key-secret.yaml::key [SAFE]
 example/prod/db-password-secret.yaml::password [SAFE]
