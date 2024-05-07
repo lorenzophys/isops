@@ -36,9 +36,7 @@ def _validate_regex(ctx: click.Context, param: click.Parameter, value: str) -> s
         re.compile(value)
         return value
     except re.error:
-        raise click.BadParameter(
-            param=param, message=f"{value} is not a valid regex."
-        ) from None
+        raise click.BadParameter(param=param, message=f"{value} is not a valid regex.") from None
 
 
 @click.option(
@@ -63,9 +61,7 @@ def _validate_regex(ctx: click.Context, param: click.Parameter, value: str) -> s
 @click.argument("path", nargs=1, type=click.Path())
 @click.command(no_args_is_help=True)
 @click.pass_context
-def cli(
-    ctx: click.Context, path: Path, config_regex: Pattern[str], summary: bool
-) -> None:
+def cli(ctx: click.Context, path: Path, config_regex: Pattern[str], summary: bool) -> None:
     """Ensure your SOPS secrets are encrypterd."""
     ctx.ensure_object(dict)
 
@@ -76,9 +72,7 @@ def cli(
         for config in load_all_yaml(Path(match_path)):
             try:
                 creation_rules += config["creation_rules"]
-                click.secho(
-                    message=f"Found config file: {match_path}", bold=True, fg="blue"
-                )
+                click.secho(message=f"Found config file: {match_path}", bold=True, fg="blue")
             except KeyError:
                 click.secho(message=f"WARNING: skipping '{match_path}'", fg="yellow")
                 continue
@@ -178,12 +172,8 @@ def cli(
         else:
             for entry in bad_keys_summary:
                 click.secho(message=entry, bold=False, fg="red", nl=True)
-            click.secho(
-                message=f"{good_keys_number} safe ", bold=True, nl=False, fg="green"
-            )
-            click.secho(
-                message=f"{bad_keys_number} unsafe", bold=True, nl=True, fg="red"
-            )
+            click.secho(message=f"{good_keys_number} safe ", bold=True, nl=False, fg="green")
+            click.secho(message=f"{bad_keys_number} unsafe", bold=True, nl=True, fg="red")
 
     if bad_keys_number or broken_yaml_found:
         ctx.exit(1)

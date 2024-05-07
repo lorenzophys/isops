@@ -87,9 +87,7 @@ def all_dict_values(data: Dict) -> Generator[Tuple[str, str], None, None]:
             yield key, str(value)
 
 
-def find_all_files_by_regex(
-    regex: Pattern[str], path: Path
-) -> Generator[Path, None, None]:
+def find_all_files_by_regex(regex: Pattern[str], path: Path) -> Generator[Path, None, None]:
     """Find all the files that match a regular expression.
 
     Args:

@@ -29,9 +29,7 @@ def test_cli_main_safe_file(simple_dir_struct, simple_enc_secret_yaml, summary):
     path_to_dotsops, path_to_yaml, root, _ = simple_dir_struct(simple_enc_secret_yaml)
     runner = CliRunner()
     if summary:
-        result = runner.invoke(
-            cli, [root, "--config-regex", ".sops.ya?ml", "--summary"]
-        )
+        result = runner.invoke(cli, [root, "--config-regex", ".sops.ya?ml", "--summary"])
         expected_output = (
             f"Found config file: {path_to_dotsops}\n"
             "---\n"
@@ -66,9 +64,7 @@ def test_cli_main_unsafe_file(simple_dir_struct, simple_secret_yaml, summary):
     runner = CliRunner()
 
     if summary:
-        result = runner.invoke(
-            cli, [root, "--config-regex", ".sops.ya?ml", "--summary"]
-        )
+        result = runner.invoke(cli, [root, "--config-regex", ".sops.ya?ml", "--summary"])
         expected_output = (
             f"Found config file: {dotsops_path}\n"
             "---\n"
@@ -108,15 +104,11 @@ def test_cli_main_dotsops_no_creation_rules(
     runner = CliRunner()
 
     if summary:
-        result = runner.invoke(
-            cli, [root, "--config-regex", ".sops.ya?ml", "--summary"]
-        )
+        result = runner.invoke(cli, [root, "--config-regex", ".sops.ya?ml", "--summary"])
     else:
         result = runner.invoke(cli, [root, "--config-regex", ".sops.ya?ml"])
 
-    expected_output = (
-        f"WARNING: skipping '{dotsops_path}'\nNo valid config file found.\n"
-    )
+    expected_output = f"WARNING: skipping '{dotsops_path}'\nNo valid config file found.\n"
 
     assert result.exit_code == 1
     assert assert_consistent_output(expected_output, result.output)
@@ -137,9 +129,7 @@ def test_cli_main_no_regex_path_no_enc_regex(
     )
     runner = CliRunner()
     if summary:
-        result = runner.invoke(
-            cli, [root, "--config-regex", ".sops.ya?ml", "--summary"]
-        )
+        result = runner.invoke(cli, [root, "--config-regex", ".sops.ya?ml", "--summary"])
         expected_output = (
             f"Found config file: {dotsops_path}\n"
             "---\n"
@@ -206,17 +196,13 @@ def test_cli_main_dotsops_bad_path_regex(
 
     runner = CliRunner()
     if summary:
-        result = runner.invoke(
-            cli, [root, "--config-regex", ".sops.ya?ml", "--summary"]
-        )
+        result = runner.invoke(cli, [root, "--config-regex", ".sops.ya?ml", "--summary"])
 
     else:
         result = runner.invoke(cli, [root, "--config-regex", ".sops.ya?ml"])
 
     expected_output = (
-        f"Found config file: {dotsops_path}\n"
-        "---\n"
-        "Invalid regex for 'path_regex': [\n"
+        f"Found config file: {dotsops_path}\n" "---\n" "Invalid regex for 'path_regex': [\n"
     )
 
     assert result.exit_code == 1
@@ -235,16 +221,12 @@ def test_cli_main_dotsops_bad_encrypted_regex(
 
     runner = CliRunner()
     if summary:
-        result = runner.invoke(
-            cli, [root, "--config-regex", ".sops.ya?ml", "--summary"]
-        )
+        result = runner.invoke(cli, [root, "--config-regex", ".sops.ya?ml", "--summary"])
     else:
         result = runner.invoke(cli, [root, "--config-regex", ".sops.ya?ml"])
 
     expected_output = (
-        f"Found config file: {dotsops_path}\n"
-        "---\n"
-        "Invalid regex for 'encrypted_regex': [\n"
+        f"Found config file: {dotsops_path}\n" "---\n" "Invalid regex for 'encrypted_regex': [\n"
     )
 
     assert result.exit_code == 1
@@ -271,9 +253,7 @@ def test_cli_two_config_files(
     runner = CliRunner()
 
     if summary:
-        result = runner.invoke(
-            cli, [str(root), "--config-regex", ".sops(.*)?.ya?ml", "--summary"]
-        )
+        result = runner.invoke(cli, [str(root), "--config-regex", ".sops(.*)?.ya?ml", "--summary"])
         expected_output = (
             f"Found config file: {dotsops_2}\n"
             f"Found config file: {dotsops}\n"
@@ -326,9 +306,7 @@ def test_cli_secret_not_valid_yaml(tmp_path, example_dotspos_yaml, summary):
     runner = CliRunner()
 
     if summary:
-        result = runner.invoke(
-            cli, [str(root), "--config-regex", ".sops.ya?ml", "--summary"]
-        )
+        result = runner.invoke(cli, [str(root), "--config-regex", ".sops.ya?ml", "--summary"])
         expected_output = (
             f"Found config file: {dotsops}\n"
             "---\n"
@@ -349,9 +327,7 @@ def test_cli_secret_not_valid_yaml(tmp_path, example_dotspos_yaml, summary):
 
 
 @pytest.mark.parametrize("summary", [True, False])
-def test_cli_secret_is_a_block_of_yaml(
-    tmp_path, example_dotspos_yaml, yaml_blocks, summary
-):
+def test_cli_secret_is_a_block_of_yaml(tmp_path, example_dotspos_yaml, yaml_blocks, summary):
     # the secret is a block of yaml
 
     yaml = YAML(typ="safe")
@@ -366,9 +342,7 @@ def test_cli_secret_is_a_block_of_yaml(
     runner = CliRunner()
 
     if summary:
-        result = runner.invoke(
-            cli, [str(root), "--config-regex", ".sops.ya?ml", "--summary"]
-        )
+        result = runner.invoke(cli, [str(root), "--config-regex", ".sops.ya?ml", "--summary"])
         expected_output = (
             f"Found config file: {dotsops}\n"
             "---\n"

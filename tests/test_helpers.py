@@ -83,12 +83,8 @@ def test_find_by_key_regex(simple_secret_yaml):
     assert got == expected
 
 
-@pytest.mark.parametrize(
-    "key,value", [("image", "nginx:1.14.2"), ("containerPort", 80)]
-)
-def test_find_by_key_target_is_in_a_possibly_nested_list(
-    example_good_deploy_yaml, key, value
-):
+@pytest.mark.parametrize("key,value", [("image", "nginx:1.14.2"), ("containerPort", 80)])
+def test_find_by_key_target_is_in_a_possibly_nested_list(example_good_deploy_yaml, key, value):
     expected = [{key: value}]
     got = []
     for val in find_by_key(example_good_deploy_yaml, key):
