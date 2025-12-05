@@ -88,6 +88,18 @@ def yaml_blocks():
     return load_all_yaml(path)
 
 
+@pytest.fixture(scope="module")
+def simple_secret_utf16_yaml():
+    path = Path(os.path.join(SAMPLES_PATH, "simple_secret_utf16.yaml"))
+    return load_yaml(path)
+
+
+@pytest.fixture(scope="module")
+def simple_secret_utf16_enc_yaml():
+    path = Path(os.path.join(SAMPLES_PATH, "simple_secret_utf16_enc.yaml"))
+    return load_yaml(path)
+
+
 @pytest.fixture(scope="function")
 def simple_dir_struct(tmp_path, example_dotspos_yaml):
     """Nobody forbids me to make a fixture that returns a function"""

@@ -1,6 +1,6 @@
 import re
 from pathlib import Path
-from typing import Dict, List, Pattern, Tuple
+from typing import Dict, List, Optional, Pattern, Tuple
 
 import click
 
@@ -10,6 +10,7 @@ from isops.utils import (
     find_all_files_by_regex,
     find_by_key,
     load_all_yaml,
+    load_all_yaml_with_encoding,
     verify_encryption_regex,
 )
 
@@ -29,6 +30,27 @@ def _categorize_keys_based_on_their_values(
             else:
                 good_keys.append(key)
     return good_keys, bad_keys
+
+
+def _print_status(file: Path, key: str, is_safe: bool, encoding: Optional[str]) -> None:
+    """Print status line with optional encoding warning.
+
+    Args:
+        file: The file path being checked.
+        key: The secret key name.
+        is_safe: Whether the secret is safely encrypted.
+        encoding: The detected file encoding, or None.
+    """
+    status = "[SAFE]" if is_safe else "[UNSAFE]"
+    color = "green" if is_safe else "red"
+
+    click.secho(message=f"{file}::{key} ", bold=False, nl=False)
+    click.secho(message=status, bold=False, fg=color, nl=False)
+
+    if encoding and encoding.startswith("utf-16"):
+        click.secho(message=" [UTF-16 ENCODING]", bold=False, fg="yellow")
+    else:
+        click.echo()  # Just newline
 
 
 def _validate_regex(ctx: click.Context, param: click.Parameter, value: str) -> str:
@@ -70,6 +92,9 @@ def cli(ctx: click.Context, path: Path, config_regex: Pattern[str], summary: boo
     creation_rules = []
     for match_path in find_all_files_by_regex(config_regex, received_path):
         for config in load_all_yaml(Path(match_path)):
+            # Skip None (empty YAML documents)
+            if config is None:
+                continue
             try:
                 creation_rules += config["creation_rules"]
                 click.secho(message=f"Found config file: {match_path}", bold=True, fg="blue")
@@ -132,12 +157,18 @@ def cli(ctx: click.Context, path: Path, config_regex: Pattern[str], summary: boo
             break
 
         for file in find_all_files_by_regex(path_regex, received_path):
-            if not load_all_yaml(file):
+            yaml_data, encoding = load_all_yaml_with_encoding(file)
+
+            if not yaml_data:
                 click.secho(message=f"{file} is not a valid YAML!", bold=True, fg="red")
                 broken_yaml_found = f"{file}"
                 break
 
-            for secret in load_all_yaml(file):
+            for secret in yaml_data:
+                # Skip None (empty YAML documents)
+                if secret is None:
+                    continue
+
                 if "sops" in secret:
                     secret.pop("sops", None)
 
@@ -148,12 +179,10 @@ def cli(ctx: click.Context, path: Path, config_regex: Pattern[str], summary: boo
 
                 for key in all_keys:
                     if key in good_keys:
-                        click.secho(message=f"{file}::{key} ", bold=False, nl=False)
-                        click.secho(message="[SAFE]", bold=False, fg="green")
+                        _print_status(file, key, True, encoding)
                         good_keys_number += 1
                     else:
-                        click.secho(message=f"{file}::{key} ", bold=False, nl=False)
-                        click.secho(message="[UNSAFE]", bold=False, fg="red")
+                        _print_status(file, key, False, encoding)
                         bad_keys_number += 1
                         if summary:
                             summary_line = f"UNSAFE secret '{key}' in '{file}'"

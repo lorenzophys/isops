@@ -1,7 +1,20 @@
+import os
+from pathlib import Path
+
 import pytest
 from ruamel.yaml import YAML
 
-from isops.utils import all_dict_values, find_by_key, load_all_yaml
+from isops.utils import (
+    all_dict_values,
+    detect_encoding,
+    find_all_files_by_regex,
+    find_by_key,
+    load_all_yaml,
+    load_all_yaml_with_encoding,
+)
+
+TESTS_PATH = os.path.dirname(os.path.realpath(__file__))
+SAMPLES_PATH = os.path.join(TESTS_PATH, "samples")
 
 
 def test_is_yaml_loaded_correctly(example_good_deploy_yaml):
@@ -176,3 +189,118 @@ def test_all_dict_values_nested_messy_yaml():
     for _, val in all_dict_values(input):
         got.append(val)
     assert got == expected
+
+
+def test_utf16_yaml_loaded_correctly(simple_secret_utf16_yaml):
+    """Test that UTF-16 encoded YAML files are loaded correctly"""
+    expected = {
+        "apiVersion": "v1",
+        "data": {"username": "YWRtaW4=", "password": "MWYyZDFlMmU2N2Rm"},
+        "kind": "Secret",
+        "metadata": {"name": "mysecret-utf16", "namespace": "default"},
+        "type": "Opaque",
+    }
+    assert isinstance(simple_secret_utf16_yaml, dict)
+    assert simple_secret_utf16_yaml == expected
+
+
+def test_utf16_encoding_detection():
+    """Test that UTF-16 encoding is correctly detected"""
+    path = Path(os.path.join(SAMPLES_PATH, "simple_secret_utf16.yaml"))
+    encoding = detect_encoding(path)
+    assert encoding is not None
+    assert encoding.startswith("utf-16")
+
+
+def test_load_all_yaml_with_encoding_utf16():
+    """Test that load_all_yaml_with_encoding returns correct data and encoding for UTF-16 files"""
+    path = Path(os.path.join(SAMPLES_PATH, "simple_secret_utf16.yaml"))
+    data, encoding = load_all_yaml_with_encoding(path)
+
+    assert len(data) == 1
+    assert encoding is not None
+    assert encoding.startswith("utf-16")
+    assert data[0]["kind"] == "Secret"
+    assert data[0]["metadata"]["name"] == "mysecret-utf16"
+
+
+def test_load_all_yaml_with_encoding_utf8():
+    """Test that load_all_yaml_with_encoding returns correct data and encoding for UTF-8 files"""
+    path = Path(os.path.join(SAMPLES_PATH, "simple_secret.yaml"))
+    data, encoding = load_all_yaml_with_encoding(path)
+
+    assert len(data) == 1
+    assert encoding == "utf-8"
+    assert data[0]["kind"] == "Secret"
+
+
+def test_utf16_encrypted_yaml_loaded_correctly(simple_secret_utf16_enc_yaml):
+    """Test that UTF-16 encoded encrypted YAML files are loaded correctly"""
+    assert isinstance(simple_secret_utf16_enc_yaml, dict)
+    assert simple_secret_utf16_enc_yaml["kind"] == "Secret"
+    assert simple_secret_utf16_enc_yaml["metadata"]["name"] == "mysecret-utf16-enc"
+    # Check that encrypted values start with ENC[
+    assert simple_secret_utf16_enc_yaml["data"]["username"].startswith("ENC[")
+    assert simple_secret_utf16_enc_yaml["data"]["password"].startswith("ENC[")
+
+
+def test_find_all_files_respects_gitignore(tmp_path):
+    """Test that find_all_files_by_regex respects .gitignore patterns"""
+    # Create test directory structure
+    (tmp_path / "included").mkdir()
+    (tmp_path / "ignored_dir").mkdir()
+    (tmp_path / "nested" / "ignored_nested").mkdir(parents=True)
+
+    # Create test files
+    (tmp_path / "file1.yaml").write_text("test: 1")
+    (tmp_path / "file2.yaml").write_text("test: 2")
+    (tmp_path / "included" / "file3.yaml").write_text("test: 3")
+    (tmp_path / "ignored_dir" / "file4.yaml").write_text("test: 4")
+    (tmp_path / "ignored_file.yaml").write_text("test: ignored")
+    (tmp_path / "nested" / "file5.yaml").write_text("test: 5")
+    (tmp_path / "nested" / "ignored_nested" / "file6.yaml").write_text("test: 6")
+
+    # Create .gitignore
+    gitignore_content = """# Ignore specific directory
+ignored_dir/
+# Ignore specific file
+ignored_file.yaml
+# Ignore nested directory
+nested/ignored_nested/
+"""
+    (tmp_path / ".gitignore").write_text(gitignore_content)
+
+    # Find all YAML files
+    found_files = list(find_all_files_by_regex(r"\.yaml$", tmp_path))
+    found_names = {f.name for f in found_files}
+
+    # Should find files that are not ignored
+    assert "file1.yaml" in found_names
+    assert "file2.yaml" in found_names
+    assert "file3.yaml" in found_names
+    assert "file5.yaml" in found_names
+    assert ".gitignore" not in found_names
+
+    # Should NOT find ignored files
+    assert "ignored_file.yaml" not in found_names
+    assert "file4.yaml" not in found_names  # in ignored_dir
+    assert "file6.yaml" not in found_names  # in ignored_nested
+
+
+def test_find_all_files_without_gitignore(tmp_path):
+    """Test that find_all_files_by_regex works without .gitignore"""
+    # Create test files
+    (tmp_path / "file1.yaml").write_text("test: 1")
+    (tmp_path / "file2.yaml").write_text("test: 2")
+    (tmp_path / "subdir").mkdir()
+    (tmp_path / "subdir" / "file3.yaml").write_text("test: 3")
+
+    # Find all YAML files (no .gitignore exists)
+    found_files = list(find_all_files_by_regex(r"\.yaml$", tmp_path))
+    found_names = {f.name for f in found_files}
+
+    # Should find all files
+    assert len(found_names) == 3
+    assert "file1.yaml" in found_names
+    assert "file2.yaml" in found_names
+    assert "file3.yaml" in found_names

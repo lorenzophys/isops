@@ -1,3 +1,6 @@
-import pkg_resources
+try:
+    from importlib.metadata import version
+except ImportError:
+    from importlib_metadata import version  # type: ignore[import-not-found,no-redef]
 
-__version__ = pkg_resources.get_distribution("isops").version
+__version__ = version("isops")
